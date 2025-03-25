@@ -38,3 +38,13 @@ button {
     font-weight: bold;
 
 }
+.block {
+    width: 50px;
+    height: 50px;
+    background-color: #4CAF50;
+    text-align: center;
+    color: white;
+    line-height: 50px;
+    font-size: 16px;
+    border-radius: 50%;
+  }

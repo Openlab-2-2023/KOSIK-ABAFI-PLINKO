@@ -16,13 +16,10 @@ const offset = spacingX / 2; // posunutie každého druhého riadku
 const yOffset = 130; // posunutie po Y
 const xOffset = 100; // posunutie po X
 
-// Nasobky pre každý stĺpec (priradíme každý stĺpec k náhodnému nasobku)
-const multipliers = [];
-for (let col = 0; col < cols; col++) {
-    multipliers[col] = Math.floor(Math.random() * 15) + 1;  // Nasobky medzi 1 a 5 pre každý stĺpec
-}
+// Manuálne definované násobky pre každý stĺpec (11 čísel)
+const multipliers = [100, 50, 8, 2, 0.6, 0.6, 0.6, 2, 8, 50, 100]; // Pôvodné čísla pre každý stĺpec
 
-// nakreslenie kolíkov a nasobkov na canvas
+// nakreslenie kolíkov a násobkov na canvas
 function drawPegs() {
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
@@ -44,11 +41,11 @@ function drawPegs() {
         }
     }
 
-    // Nakreslenie nasobkov pod každým stĺpcom pegov
+    // Nakreslenie násobkov pod každým stĺpcom pegov
     for (let col = 0; col < cols; col++) {
         let multiplierX = col * spacingX + xOffset + spacingX / 2;
         let multiplierY = (rows * spacingY) + yOffset + 20;  // Pod celým poľom pegov
-        drawMultiplier(multiplierX, multiplierY, multipliers[col]);  // Zobraziť nasobok pre tento stĺpec
+        drawMultiplier(multiplierX, multiplierY, multipliers[col]);  // Zobraziť násobok pre tento stĺpec
     }
 }
 
@@ -61,12 +58,14 @@ function drawPeg(x, y) {
     ctx.closePath();
 }
 
-// nakreslenie nasobku pod stĺpcom pegov
+// výzor násobkov
 function drawMultiplier(x, y, multiplier) {
-    ctx.font = "16px Arial";
-    ctx.fillStyle = "black";
-    ctx.fillText(`x${multiplier}`, x - 10, y);  // Text nasobku vycentrovaný pod stĺpec
+    ctx.font = "bold 20px Arial";
+    ctx.fillStyle = "olive"; 
+    ctx.textAlign = "center"; 
+    ctx.textBaseline = "middle";
+    ctx.fillText(`x${multiplier}`, x, y); 
 }
 
-// Zobrazenie pegov a nasobkov
+// Zobrazenie pegov a násobkov
 drawPegs();

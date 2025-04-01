@@ -1,4 +1,3 @@
-
 const canvas = document.getElementById("defaultcanvas");
 const ctx = canvas.getContext("2d");
 
@@ -8,23 +7,52 @@ canvas.height = canvas.clientHeight * scaleFactor;
 ctx.scale(scaleFactor, scaleFactor);
 
 //hodnoty pre kolíky
-let pegRadius = 8; //velkosť
-const spacingX = 60;  //vzdialenosť medzi X
-const spacingY = 60;  // vzialenosť medzi po Y
-let rows = 10; // počet riadkov
-let cols = 11; //počet stĺpcov
-const offset = spacingX / 2; //posunutie každého druhého riadku
-const yOffset = 130; // posunutie po X
-const xOffset = 100; //posunutie po Y
+let pegRadius = 8;
+const spacingX = 60;
+const spacingY = 60;
+let rows = 11;
+let cols = 11;
+const offset = spacingX / 2;
+const yOffset = 100;
+const xOffset = 120;
 let gravity = 0.25;
+const drop = document.getElementById("drop");
 
+// pole pre gulicky 
+let balls = [];
+
+// vytvorenie gulicky, hodnoty gulicky
+function createBall() {
+    return {
+        x: getRandomXPosition(),
+        y: yOffset - 150,
+        speed: 6,
+        direction: 1,
+        radius: 15,
+        angle: Math.PI / 4,
+        dx: 0,
+        dy: 0,
+        firstCollision: true,
+        color: getRandomColor()
+    };
+}
+
+// nahodne farby pre kazdu gulicku 
+function getRandomColor() {
+    const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink'];
+    return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// rychlost gulicky 
+function ballSpeed(ball) {
+    ball.dx = ball.speed * Math.cos(ball.angle);
+    ball.dy = ball.speed * Math.sin(ball.angle);
+}
 
 //random X pozicia vramci kolikov
 function getRandomXPosition() {
-
     const randomCol = Math.floor(Math.random() * cols);
     let x;
-
 
     if (randomCol % 2 === 0) {
         x = randomCol * spacingX + xOffset;
@@ -34,22 +62,12 @@ function getRandomXPosition() {
 
     return x;
 }
-//hodnoty gulicky
-let ball = { x: getRandomXPosition(), y: yOffset - 150, speed: 6, radius: 15, angle: Math.PI / 4, dx: 0, dy: 0 }
-
-
-//rychlost gulicky
-function ballSpeed() {
-    ball.dy = ball.speed * Math.sin(ball.angle);
-}
 
 // nakreslenie kolikov v canvas
 function drawPegs() {
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
             let x;
-
-            // kazdy párny riadok + menšie posunutie + posunutie po X
             if (row % 2 === 0) {
                 x = col * spacingX + xOffset;
             } else {
@@ -58,7 +76,6 @@ function drawPegs() {
 
             let y = row * spacingY + yOffset;
 
-            // zaistenie že sa kolíky netresia mimo canvas
             if (x > pegRadius && x < canvas.width - pegRadius) {
                 drawPeg(x, y);
             }
@@ -66,14 +83,13 @@ function drawPegs() {
     }
 }
 
-//kreslenie gulicky
-function drawBall() {
+// kreslenie gulicky
+function drawBall(ball) {
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2, false);
-    ctx.fillStyle = "red";
+    ctx.fillStyle = ball.color;
     ctx.fill();
     ctx.closePath();
-
 }
 
 // kolíky 
@@ -85,87 +101,106 @@ function drawPeg(x, y) {
     ctx.closePath();
 }
 
-
-
-// padanie gulicky
-function dropBall() {
+//  padanie gulicky 
+function dropBall(ball) {
     ball.dy += gravity;
     ball.y += ball.dy;
-
-
-
+    ball.x += ball.dx;
 }
 
-function checkCollision() {
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-            let x;
-            if (row % 2 === 0) {
-                x = col * spacingX + xOffset;
-            } else {
-                x = col * spacingX + offset + xOffset;
-            }
+// kolízie pre gulicky
+function checkCollisions() {
+    for (let i = 0; i < balls.length; i++) {
+        const ball = balls[i];
+        
+        // vymazanie guli ak prejdu canvas
+        if (ball.y > canvas.height + ball.radius) {
+            balls.splice(i, 1);
+            i--;
+            continue;
+        }
+        
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                let x;
+                if (row % 2 === 0) {
+                    x = col * spacingX + xOffset;
+                } else {
+                    x = col * spacingX + offset + xOffset;
+                }
 
-            let y = row * spacingY + yOffset;
+                let y = row * spacingY + yOffset;
 
-
-            const dist = Math.sqrt(Math.pow(ball.x - x, 2) + Math.pow(ball.y - y, 2));
-            if (dist <= ball.radius + pegRadius) {
-                handleCollision(x, y);
-                ball.x += alternateX();
+                const dist = Math.sqrt(Math.pow(ball.x - x, 2) + Math.pow(ball.y - y, 2));
+                if (dist <= ball.radius + pegRadius) {
+                    handleCollision(ball, x, y);
+                }
             }
         }
     }
 }
 
-function handleCollision(pegX, pegY) {
-
-
+// kolizie medzi gulickami a pegami
+function handleCollision(ball, pegX, pegY) {
     const dx = ball.x - pegX;
     const dy = ball.y - pegY;
-
-
     const distance = Math.sqrt(dx * dx + dy * dy);
     const nx = dx / distance;
     const ny = dy / distance;
 
+    ball.dx = Math.abs(ball.dx) * alternateX(ball);
 
     const dotProduct = ball.dx * nx + ball.dy * ny;
     ball.dx -= 2 * dotProduct * nx;
     ball.dy -= 2 * dotProduct * ny;
 
-
     const overlap = ball.radius + pegRadius - distance;
     ball.x += nx * overlap;
     ball.y += ny * overlap;
 
-    ball.dx *= 0.8;
-    ball.dy *= 0.8;
+    ball.dx += (Math.random() - 0.5) * 0.5;
+    ball.dx *= 0.5;
+    ball.dy *= 0.5;
 }
-function alternateX() {
-
-    let rnd = Math.random();
-    return rnd < 0.5 ? 1 : -1;
+//striedanie osi, prvy odraz = vacsi odraz, druhy = normalny
+function alternateX(ball) {
+    if (ball.firstCollision) {
+        ball.firstCollision = false;
+        const direction = Math.random() < 0.5 ? -1 : 1;
+        ball.x += direction * 2;
+        return direction;
+    }
     
-
+    const direction = Math.random() < 0.5 ? -1 : 1;
+    ball.x += direction;
+    return direction;
 }
-
-
 
 // plynule animacia vsetkeho
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPegs();
-    drawBall();
-    dropBall();
-    checkCollision();
-    requestAnimationFrame(animate)
+    
+    
+    for (const ball of balls) {
+        dropBall(ball);
+        drawBall(ball);
+    }
+    
+    checkCollisions();
+    requestAnimationFrame(animate);
 }
 
+// drop button
+drop.addEventListener("click", function() {
+    const newBall = createBall();
+    ballSpeed(newBall);
+    balls.push(newBall);
+});
+
+// zacinanie s prvou gulou
+balls.push(createBall());
+ballSpeed(balls[0]);
 
 
-ballSpeed();
 animate();
-
-
-

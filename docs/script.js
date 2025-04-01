@@ -9,7 +9,7 @@ ctx.scale(scaleFactor, scaleFactor);
 // Peg values
 const pegRadius = 8;
 const spacingX = 60;  // Increased from original
-const spacingY = 40;
+const spacingY = 60;
 let rows = 11;
 let cols = 11;
 const offset = spacingX / 2;

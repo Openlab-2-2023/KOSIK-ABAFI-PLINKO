@@ -6,16 +6,10 @@ canvas.width = canvas.clientWidth * scaleFactor;
 canvas.height = canvas.clientHeight * scaleFactor;
 ctx.scale(scaleFactor, scaleFactor);
 
-<<<<<<< HEAD
 //hodnoty pre kolíky
 let pegRadius = 8;
 const spacingX = 60;
-=======
-// Peg values
-const pegRadius = 8;
-const spacingX = 60;  // Increased from original
->>>>>>> 5cf63ba59dfcbf0fb16213364a01d118c5ccd135
-const spacingY = 60;
+const spacingY = 55;
 let rows = 11;
 let cols = 11;
 const offset = spacingX / 2;
@@ -183,7 +177,6 @@ function drawMultiplier(x, y, value, width, height, gap = 10) {
     
     ctx.fillText(text, x, y + gap); // Adjust text position with gap
 }
-<<<<<<< HEAD
 
 //  padanie gulicky 
 function dropBall(ball) {
@@ -305,6 +298,3 @@ ballSpeed(balls[0]);
 
 
 animate();
-=======
-drawPegs();
->>>>>>> 5cf63ba59dfcbf0fb16213364a01d118c5ccd135

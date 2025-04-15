@@ -100,6 +100,20 @@ function drawPeg(x, y) {
     ctx.fill();
     ctx.closePath();
 }
+function drawWall1() {
+    ctx.beginPath();
+    ctx.rect(20, 20, 75, 760);
+    ctx.fillStyle  = "#1a1a1a"
+    ctx.fill();
+    
+}
+function drawWall2() {
+    ctx.beginPath();
+    ctx.rect(780, 20, 75, 760);
+    ctx.fillStyle  = "#1a1a1a"
+    ctx.fill();
+    
+}
 
 //  padanie gulicky 
 function dropBall(ball) {
@@ -118,6 +132,20 @@ function checkCollisions() {
             balls.splice(i, 1);
             i--;
             continue;
+        }
+
+        //kolizie medzi stenami
+        const wall1 = 20 + 75;
+        const wall2 = 780;
+
+        if (ball.x - ball.radius <= wall1) {
+            ball.x = wall1 + ball.radius;
+            ball.dx *= -1;
+        }
+
+        if (ball.x + ball.radius >= wall2) {
+            ball.x = wall2 - ball.radius;
+            ball.dx *= -1;
         }
         
         for (let row = 0; row < rows; row++) {
@@ -180,6 +208,8 @@ function alternateX(ball) {
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPegs();
+    drawWall1();
+    drawWall2();
     
     
     for (const ball of balls) {

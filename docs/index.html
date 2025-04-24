@@ -11,19 +11,18 @@
 <body>
     <div id="layout">
         <div id="menu">
-            <div id = buttons>
-            <button id="drop" onclick="drawBall()">Drop</button>
-            
+            <div id="buttons">
+                <button id="drop" onclick="drawBall()">Drop</button>
+            </div>
+            <h1 id="balance">balance</h1>
+            <div id="bet">
+                Bet: <input type="number" id="betInput" value="100" onchange="updateBet()">
             </div>
         </div>
-        <canvas width="500" height="500" id="defaultcanvas">
-
-
-        </canvas>
-    
+        <canvas width="500" height="500" id="defaultcanvas"></canvas>
     </div>
-
 </body>
+
 <script src="script.js"></script>
 
 </html>

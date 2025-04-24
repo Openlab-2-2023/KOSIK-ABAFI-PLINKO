@@ -6,26 +6,35 @@ canvas.width = canvas.clientWidth * scaleFactor;
 canvas.height = canvas.clientHeight * scaleFactor;
 ctx.scale(scaleFactor, scaleFactor);
 
-//hodnoty pre kolíky
+// Peg settings
 let pegRadius = 8;
 const spacingX = 60;
-const spacingY = 55;
+const spacingY = 60;
 let rows = 11;
 let cols = 11;
 const offset = spacingX / 2;
 const yOffset = 100;
 const xOffset = 120;
 let gravity = 0.25;
-const drop = document.getElementById("drop");
 
-// Multipliers (now with consistent formatting)
 const multipliers = [100, 50, 8, 2, 0.6, 0.6, 0.6, 2, 8, 50, 100];
 
-
-// pole pre gulicky 
+// Ball array
 let balls = [];
 
-// vytvorenie gulicky, hodnoty gulicky
+// Balance system
+let balance = 1000;
+const balanceDisplay = document.getElementById("balance");
+const drop = document.getElementById("drop");
+const betInput = document.getElementById("betInput");
+
+// Update balance text
+function updateBalanceDisplay() {
+    balanceDisplay.textContent = "Balance: " + balance;
+}
+updateBalanceDisplay();
+
+// Create new ball
 function createBall() {
     return {
         x: getRandomXPosition(),
@@ -41,43 +50,34 @@ function createBall() {
     };
 }
 
-// nahodne farby pre kazdu gulicku 
+// Get random ball color
 function getRandomColor() {
     const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink'];
     return colors[Math.floor(Math.random() * colors.length)];
 }
 
-// rychlost gulicky 
+// Apply speed to ball
 function ballSpeed(ball) {
     ball.dx = ball.speed * Math.cos(ball.angle);
     ball.dy = ball.speed * Math.sin(ball.angle);
 }
 
-//random X pozicia vramci kolikov
+// Get random column X position
 function getRandomXPosition() {
     const randomCol = Math.floor(Math.random() * cols);
-    let x;
-
-    if (randomCol % 2 === 0) {
-        x = randomCol * spacingX + xOffset;
-    } else {
-        x = randomCol * spacingX + offset + xOffset;
-    }
-
+    let x = (randomCol % 2 === 0)
+        ? randomCol * spacingX + xOffset
+        : randomCol * spacingX + offset + xOffset;
     return x;
 }
 
-// nakreslenie kolikov v canvas
+// Draw pegs
 function drawPegs() {
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-            let x;
-            if (row % 2 === 0) {
-                x = col * spacingX + xOffset;
-            } else {
-                x = col * spacingX + offset + xOffset;
-            }
-
+            let x = (row % 2 === 0)
+                ? col * spacingX + xOffset
+                : col * spacingX + offset + xOffset;
             let y = row * spacingY + yOffset;
 
             if (x > pegRadius && x < canvas.width - pegRadius) {
@@ -86,40 +86,18 @@ function drawPegs() {
         }
     }
 
-     // NEW: Draw multipliers with uniform size and spacing
-     const multiplierWidth = 50;  // Fixed width
-     const multiplierHeight = 30; // Fixed height
-     const verticalSpacing = 40;  // Increased vertical gap
-     
-     for (let col = 0; col < cols; col++) {
-         const x = col * spacingX + xOffset + spacingX / 2;
-         const y = (rows * spacingY) + yOffset + verticalSpacing;
-         
-         drawMultiplier(
-             x, 
-             y, 
-             multipliers[col], 
-             multiplierWidth, 
-             multiplierHeight,
-             15 // 15px gap - adjust this number as needed
-         );
-     }
+    const multiplierWidth = 50;
+    const multiplierHeight = 30;
+    const verticalSpacing = -10;
+
+    for (let col = 0; col < cols; col++) {
+        const x = col * spacingX + xOffset + spacingX / 2;
+        const y = (rows * spacingY) + yOffset + verticalSpacing;
+        drawMultiplier(x, y, multipliers[col], multiplierWidth, multiplierHeight, 15);
+    }
 }
 
- 
-    
-
-
-// kreslenie gulicky
-function drawBall(ball) {
-    ctx.beginPath();
-    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2, false);
-    ctx.fillStyle = ball.color;
-    ctx.fill();
-    ctx.closePath();
-}
-
-// kolíky 
+// Draw single peg
 function drawPeg(x, y) {
     ctx.beginPath();
     ctx.arc(x, y, pegRadius, 0, Math.PI * 2);
@@ -128,76 +106,70 @@ function drawPeg(x, y) {
     ctx.closePath();
 }
 
-
-function drawWall1() {
+// Draw ball
+function drawBall(ball) {
     ctx.beginPath();
-    ctx.rect(20, 20, 75, 760);
-    ctx.fillStyle  = "#1a1a1a"
+    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2, false);
+    ctx.fillStyle = ball.color;
     ctx.fill();
-    
-}
-function drawWall2() {
-    ctx.beginPath();
-    ctx.rect(775, 20, 75, 760);
-    ctx.fillStyle  = "#1a1a1a"
-    ctx.fill();
-    
+    ctx.closePath();
 }
 
-// Updated multiplier drawing
-function drawMultiplier(x, y, value, width, height, gap = 10) {
-    const text = `×${value}`;
-    const cornerRadius = 5;
-    
-    // Calculate position with gap
-    const rectX = x - width/2;
-    const rectY = y - height/2 + gap; // Add vertical gap
-    
-    // Background with gap
-    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-    ctx.beginPath();
-    ctx.roundRect(
-        rectX,
-        rectY,
-        width,
-        height,
-        cornerRadius
-    );
-    ctx.fill();
-    
-    // Text (positioned in center of rectangle)
-    ctx.font = "bold 16px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    
-    // Different colors based on value
-    if (value >= 50) ctx.fillStyle = "#d32f2f";
-    else if (value >= 5) ctx.fillStyle = "#1976d2";
-    else ctx.fillStyle = "#388e3c";
-    
-    ctx.fillText(text, x, y + gap); // Adjust text position with gap
-}
-
-//  padanie gulicky 
+// Drop ball movement
 function dropBall(ball) {
     ball.dy += gravity;
     ball.y += ball.dy;
     ball.x += ball.dx;
 }
 
-// kolízie pre gulicky
+// Walls
+function drawWall1() {
+    ctx.beginPath();
+    ctx.rect(20, 20, 75, 760);
+    ctx.fillStyle = "#1a1a1a";
+    ctx.fill();
+}
+function drawWall2() {
+    ctx.beginPath();
+    ctx.rect(775, 20, 75, 760);
+    ctx.fillStyle = "#1a1a1a";
+    ctx.fill();
+}
+
+// Multiplier display
+function drawMultiplier(x, y, value, width, height, gap = 10) {
+    const text = `×${value}`;
+    const cornerRadius = 5;
+    const rectX = x - width / 2;
+    const rectY = y - height / 2 + gap;
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.beginPath();
+    ctx.roundRect(rectX, rectY, width, height, cornerRadius);
+    ctx.fill();
+
+    ctx.font = "bold 16px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    if (value >= 50) ctx.fillStyle = "#d32f2f";
+    else if (value >= 5) ctx.fillStyle = "#1976d2";
+    else ctx.fillStyle = "#388e3c";
+
+    ctx.fillText(text, x, y + gap);
+}
+
+// Check collisions with pegs and walls
 function checkCollisions() {
     for (let i = 0; i < balls.length; i++) {
         const ball = balls[i];
-        
-        // vymazanie guli ak prejdu canvas
+
         if (ball.y > canvas.height + ball.radius) {
             balls.splice(i, 1);
             i--;
             continue;
         }
 
-        //kolizie medzi stenami
         const wall1 = 20 + 75;
         const wall2 = 780;
 
@@ -210,19 +182,15 @@ function checkCollisions() {
             ball.x = wall2 - ball.radius;
             ball.dx *= -1;
         }
-        
+
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
-                let x;
-                if (row % 2 === 0) {
-                    x = col * spacingX + xOffset;
-                } else {
-                    x = col * spacingX + offset + xOffset;
-                }
-
+                let x = (row % 2 === 0)
+                    ? col * spacingX + xOffset
+                    : col * spacingX + offset + xOffset;
                 let y = row * spacingY + yOffset;
 
-                const dist = Math.sqrt(Math.pow(ball.x - x, 2) + Math.pow(ball.y - y, 2));
+                const dist = Math.sqrt((ball.x - x) ** 2 + (ball.y - y) ** 2);
                 if (dist <= ball.radius + pegRadius) {
                     handleCollision(ball, x, y);
                 }
@@ -231,7 +199,7 @@ function checkCollisions() {
     }
 }
 
-// kolizie medzi gulickami a pegami
+// Handle collision with peg
 function handleCollision(ball, pegX, pegY) {
     const dx = ball.x - pegX;
     const dy = ball.y - pegY;
@@ -240,7 +208,6 @@ function handleCollision(ball, pegX, pegY) {
     const ny = dy / distance;
 
     ball.dx = Math.abs(ball.dx) * alternateX(ball);
-
     const dotProduct = ball.dx * nx + ball.dy * ny;
     ball.dx -= 2 * dotProduct * nx;
     ball.dy -= 2 * dotProduct * ny;
@@ -253,7 +220,8 @@ function handleCollision(ball, pegX, pegY) {
     ball.dx *= 0.5;
     ball.dy *= 0.5;
 }
-//striedanie osi, prvy odraz = vacsi odraz, druhy = normalny
+
+// Bounce direction
 function alternateX(ball) {
     if (ball.firstCollision) {
         ball.firstCollision = false;
@@ -261,40 +229,42 @@ function alternateX(ball) {
         ball.x += direction * 2;
         return direction;
     }
-    
     const direction = Math.random() < 0.5 ? -1 : 1;
     ball.x += direction;
     return direction;
 }
 
-// plynule animacia vsetkeho
+// Animate everything
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPegs();
     drawWall1();
     drawWall2();
-    
-    
+
     for (const ball of balls) {
         dropBall(ball);
         drawBall(ball);
     }
-    
+
     checkCollisions();
     requestAnimationFrame(animate);
 }
 
-// drop button
-drop.addEventListener("click", function() {
+// Handle drop button click
+drop.addEventListener("click", () => {
+    const betValue = parseFloat(betInput.value);
+
+    if (isNaN(betValue) || betValue <= 0 || balance < betValue) return;
+
+    balance -= betValue;
+    updateBalanceDisplay();
+
     const newBall = createBall();
     ballSpeed(newBall);
     balls.push(newBall);
 });
 
-// zacinanie s prvou gulou
-balls.push(createBall());
-ballSpeed(balls[0]);
 
-
-
+// Init
+updateBalanceDisplay();
 animate();

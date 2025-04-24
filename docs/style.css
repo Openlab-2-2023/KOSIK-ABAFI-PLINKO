@@ -27,7 +27,7 @@ width: 100%;
 }
 button {
     background: linear-gradient(to right, #58df87, #46a76b);
-    position: absolute;
+
     height: 50px;
     width: 125px;
     border-radius: 8px;

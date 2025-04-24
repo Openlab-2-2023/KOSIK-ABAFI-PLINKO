@@ -14,14 +14,17 @@ let rows = 14;
 let cols = 16;
 const offset = spacingX / 2;
 const yOffset = 100;
-const xOffset = 120;
+let xOffset = 120;
 let gravity = 0.25;
 const drop = document.getElementById("drop");
+let layoutMode = "grid";
 
 // nastavitelne pole multiplierov
 const multipliers = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
 
 const multiplierRects = [];
+
+let pegs = [];
 
 
 
@@ -35,7 +38,7 @@ function createBall() {
     return {
         x: getRandomXPosition(),
         y: yOffset - 150,
-        speed: 6,
+        speed: 4,
         direction: 1,
         radius: 10,
         angle: Math.PI / 4,
@@ -74,23 +77,46 @@ function getRandomXPosition() {
 
 // nakreslenie kolikov v canvas
 function drawPegs() {
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-            let x;
-            if (row % 2 === 0) {
-                x = col * spacingX + xOffset;
-            } else {
-                x = col * spacingX + offset + xOffset;
+    pegs = []; // vymaze pole s predoslimi pegami 
+
+    if (layoutMode === "grid") {
+        xOffset = 120;
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                let x;
+                if (row % 2 === 0) {
+                    x = col * spacingX + xOffset;
+                } else {
+                    x = col * spacingX + offset + xOffset;
+                }
+
+                let y = row * spacingY + yOffset;
+
+                if (x > pegRadius && x < canvas.width - pegRadius) {
+                    drawPeg(x, y);
+                    pegs.push({ x, y });
+                }
             }
+        }
+    } else if (layoutMode === "triangle") {
 
-            let y = row * spacingY + yOffset;
+        xOffset = 180;
+        for (let row = 0; row < rows; row++) {
+            const numPegs = row + 1;
+            const rowWidth = (numPegs - 1) * spacingX;
+            const y = row * spacingY + yOffset;
 
-            if (x > pegRadius && x < canvas.width - pegRadius) {
+            for (let i = 0; i < numPegs; i++) {
+                const x = canvas.width / 2 - rowWidth / 2 + i * spacingX;
                 drawPeg(x, y);
+                pegs.push({ x, y });
             }
         }
     }
 
+    drawMultipliers();
+}
+function drawMultipliers() {
     //hodnoty multiplieroch
     const multiplierWidth = 50;  
     const multiplierHeight = 30; 
@@ -119,6 +145,7 @@ function drawPegs() {
         });
     }
 }
+
 
 //checkovanie kolízií na multiplieroch
 function checkMultiplierCollision(ball, index) {
@@ -216,13 +243,18 @@ function dropBall(ball) {
     ball.x += ball.dx;
 }
 
+const toggleLayoutBtn = document.getElementById("toggleLayout");
+toggleLayoutBtn.addEventListener("click", () => {
+    layoutMode = layoutMode === "grid" ? "triangle" : "grid";
+});
+
 // kolízie pre gulicky
 function checkCollisions() {
     for (let i = 0; i < balls.length; i++) {
         const ball = balls[i];
 
         if (checkMultiplierCollision(ball, i)) {
-            i--; // Adjust index since we removed a ball
+            i--; 
             continue;
         }
 
@@ -248,21 +280,10 @@ function checkCollisions() {
             ball.dx *= -1;
         }
 
-        for (let row = 0; row < rows; row++) {
-            for (let col = 0; col < cols; col++) {
-                let x;
-                if (row % 2 === 0) {
-                    x = col * spacingX + xOffset;
-                } else {
-                    x = col * spacingX + offset + xOffset;
-                }
-
-                let y = row * spacingY + yOffset;
-
-                const dist = Math.sqrt(Math.pow(ball.x - x, 2) + Math.pow(ball.y - y, 2));
-                if (dist <= ball.radius + pegRadius) {
-                    handleCollision(ball, x, y);
-                }
+        for (const peg of pegs) {
+            const dist = Math.sqrt(Math.pow(ball.x - peg.x, 2) + Math.pow(ball.y - peg.y, 2));
+            if (dist <= ball.radius + pegRadius) {
+                handleCollision(ball, peg.x, peg.y);
             }
         }
     }

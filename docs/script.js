@@ -6,17 +6,19 @@ canvas.width = canvas.clientWidth * scaleFactor;
 canvas.height = canvas.clientHeight * scaleFactor;
 ctx.scale(scaleFactor, scaleFactor);
 
-//hodnoty pre kolíky
+//hodnoty pre mapu
 let pegRadius = 5;
 const spacingX = 40;
 const spacingY = 40;
-let rows = 14;      
+let rows = 14;
 let cols = 16;
 const offset = spacingX / 2;
 const yOffset = 100;
 let xOffset = 120;
 let gravity = 0.25;
 let layoutMode = "grid";
+let wallstype = "normal";
+let wallstype2 = "normal";
 
 // nastavitelne pole multiplierov
 const multipliers = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
@@ -36,7 +38,7 @@ const balanceDisplay = document.getElementById("balance");
 const drop = document.getElementById("drop");
 const betInput = document.getElementById("betInput");
 
-// Update balance text
+// updatovanie balance
 function updateBalanceDisplay() {
     balanceDisplay.textContent = "Balance: " + balance;
 }
@@ -47,8 +49,8 @@ updateBalanceDisplay();
 // vytvorenie gulicky, hodnoty gulicky
 function createBall() {
     return {
-        //x: getRandomXPosition(),
-        x: 345,
+        x: getRandomXPosition(),
+        //x: 345,
         y: yOffset - 150,
         speed: 3,
         direction: 1,
@@ -93,7 +95,8 @@ function drawPegs() {
 
     if (layoutMode === "grid") {
         rows = 14
-        
+        wallstype = "normal"
+        wallstype2 = "normal"
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
                 let x;
@@ -114,7 +117,8 @@ function drawPegs() {
     } else if (layoutMode === "triangle") {
 
         rows = 15;
-
+        wallstype = "angled"
+        wallstype2 = "angled"
         for (let row = 0; row < rows; row++) {
             const numPegs = row + 1;
             const rowWidth = (numPegs - 1) * spacingX;
@@ -132,12 +136,12 @@ function drawPegs() {
 }
 function drawMultipliers() {
     //hodnoty multiplieroch
-    const multiplierWidth = 50;  
-    const multiplierHeight = 30; 
-    const verticalSpacing = -10;  
+    const multiplierWidth = 50;
+    const multiplierHeight = 30;
+    const verticalSpacing = -10;
     const multiplierSpacing = 50; // miesto medzi multipliermi
 
-    multiplierRects.length = 0; 
+    multiplierRects.length = 0;
 
     for (let col = 0; col < multipliers.length; col++) {
         const multiplierWidth = 55;
@@ -145,7 +149,7 @@ function drawMultipliers() {
         const verticalSpacing = -10;
         const multiplierSpacing = 55;
 
-        const x = col * multiplierSpacing + xOffset -7 + multiplierSpacing / 2;
+        const x = col * multiplierSpacing + xOffset - 7 + multiplierSpacing / 2;
         const y = (rows * spacingY) + yOffset + verticalSpacing;
 
         //kreslenie jedneho multiplieru
@@ -169,7 +173,7 @@ function checkMultiplierCollision(ball, index) {
 
         if (withinX && withinY) {
             balls.splice(index, 1); // odstrani gulicku po dopade
-            return true; 
+            return true;
         }
     }
     return false;
@@ -195,23 +199,60 @@ function drawPeg(x, y) {
     ctx.closePath();
 }
 
-//kreslenie stien
 function drawWall1() {
-    ctx.beginPath();
-    ctx.rect(40, 15, 75, 680);
-    ctx.fillStyle = "rgba(0, 0, 0, 0)"
-    //ctx.fillStyle  = "#000000"
-    ctx.fill();
+    ctx.save();
 
+    if (wallstype === "normal") {
+        ctx.beginPath();
+        ctx.rect(40, 15, 75, 680);
+        ctx.fillStyle = "rgba(0, 0, 0, 0)"
+        //ctx.fillStyle = "#000000";
+        ctx.fill();
+    } else if (wallstype === "angled") {
+        ctx.fillStyle = "rgba(0, 0, 0, 0)"
+        const centerX = 220 + 75 / 2;
+        const centerY = 15 + 680 / 2;
+
+        ctx.translate(centerX, centerY);
+
+        ctx.rotate(Math.PI / 7);
+
+
+        ctx.fillRect(-75 / 2, -430 / 2, 75, 430);
+    }
+
+    ctx.restore();
 }
+
 function drawWall2() {
-    ctx.beginPath();
-    ctx.rect(745, 15, 75, 680);
-    ctx.fillStyle = "rgba(0, 0, 0, 0)"
-    //ctx.fillStyle  = "#000000"
-    ctx.fill();
+    if (wallstype2 === "normal") {
+        ctx.beginPath();
+        ctx.rect(745, 15, 75, 680);
+        ctx.fillStyle = "rgba(0, 0, 0, 0)"
+        //ctx.fillStyle = "#000000"
+        ctx.fill();
+    } else if (wallstype2 === "angled") {
 
+        ctx.save();
+        ctx.fillStyle = "rgba(0, 0, 0, 0)"
+
+        const centerX = 585 + 75 / 2;
+        const centerY = 15 + 680 / 2;
+        ctx.translate(centerX, centerY);
+
+
+        ctx.rotate(-Math.PI / 7);
+
+
+        ctx.fillRect(-75 / 2, -430 / 2, 75, 430);
+
+
+        ctx.restore();
+    }
 }
+
+
+
 
 
 
@@ -220,11 +261,11 @@ function drawMultiplier(x, y, value, width, height, gap = 10) {
     const text = `×${value}`;
     const cornerRadius = 6;
 
-    
+
     const rectX = x - width / 2;
     const rectY = y - height / 2 + gap;
 
-    
+
     ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
     ctx.beginPath();
     ctx.roundRect(
@@ -236,7 +277,7 @@ function drawMultiplier(x, y, value, width, height, gap = 10) {
     );
     ctx.fill();
 
-    
+
     ctx.font = "bold 16px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -247,7 +288,7 @@ function drawMultiplier(x, y, value, width, height, gap = 10) {
     else if (value <= 1) ctx.fillStyle = "#ffc508";
     else ctx.fillStyle = "#388e3c";
 
-    ctx.fillText(text, x, y + gap); 
+    ctx.fillText(text, x, y + gap);
 }
 
 //  padanie gulicky 
@@ -257,6 +298,7 @@ function dropBall(ball) {
     ball.x += ball.dx;
 }
 
+//prepinanie medzi trojuholnikovou mapou a gridovou
 const toggleLayoutBtn = document.getElementById("toggleLayout");
 toggleLayoutBtn.addEventListener("click", () => {
     layoutMode = layoutMode === "grid" ? "triangle" : "grid";
@@ -283,6 +325,7 @@ function checkCollisions() {
         //kolizie medzi stenami
         const wall1 = 40 + 75;
         const wall2 = 745;
+        
 
         if (ball.x - ball.radius <= wall1) {
             ball.x = wall1 + ball.radius;
@@ -302,6 +345,8 @@ function checkCollisions() {
         }
     }
 }
+
+
 
 // kolizie medzi gulickami a pegami
 function handleCollision(ball, pegX, pegY) {
@@ -342,10 +387,10 @@ function alternateX(ball) {
 // plynule animacia vsetkeho
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawPegs();
+
     drawWall1();
     drawWall2();
-
+    drawPegs();
 
     for (const ball of balls) {
         dropBall(ball);

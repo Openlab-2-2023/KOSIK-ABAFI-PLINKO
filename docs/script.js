@@ -10,13 +10,12 @@ ctx.scale(scaleFactor, scaleFactor);
 let pegRadius = 5;
 const spacingX = 40;
 const spacingY = 40;
-let rows = 14;
+let rows = 14;      
 let cols = 16;
 const offset = spacingX / 2;
 const yOffset = 100;
 let xOffset = 120;
 let gravity = 0.25;
-const drop = document.getElementById("drop");
 let layoutMode = "grid";
 
 // nastavitelne pole multiplierov
@@ -31,14 +30,27 @@ let pegs = [];
 // pole pre gulicky 
 let balls = [];
 
+// Balance system
+let balance = 1000;
+const balanceDisplay = document.getElementById("balance");
+const drop = document.getElementById("drop");
+const betInput = document.getElementById("betInput");
+
+// Update balance text
+function updateBalanceDisplay() {
+    balanceDisplay.textContent = "Balance: " + balance;
+}
+updateBalanceDisplay();
+
 
 
 // vytvorenie gulicky, hodnoty gulicky
 function createBall() {
     return {
-        x: getRandomXPosition(),
+        //x: getRandomXPosition(),
+        x: 345,
         y: yOffset - 150,
-        speed: 4,
+        speed: 3,
         direction: 1,
         radius: 10,
         angle: Math.PI / 4,
@@ -80,7 +92,8 @@ function drawPegs() {
     pegs = []; // vymaze pole s predoslimi pegami 
 
     if (layoutMode === "grid") {
-        xOffset = 120;
+        rows = 14
+        
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
                 let x;
@@ -100,14 +113,15 @@ function drawPegs() {
         }
     } else if (layoutMode === "triangle") {
 
-        xOffset = 180;
+        rows = 15;
+
         for (let row = 0; row < rows; row++) {
             const numPegs = row + 1;
             const rowWidth = (numPegs - 1) * spacingX;
             const y = row * spacingY + yOffset;
 
             for (let i = 0; i < numPegs; i++) {
-                const x = canvas.width / 2 - rowWidth / 2 + i * spacingX;
+                const x = canvas.width / 2.45 - rowWidth / 2 + i * spacingX;
                 drawPeg(x, y);
                 pegs.push({ x, y });
             }
@@ -342,17 +356,26 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-// drop button
-drop.addEventListener("click", function () {
+// Handle drop button click
+drop.addEventListener("click", () => {
+    const betValue = parseFloat(betInput.value);
+
+    if (isNaN(betValue) || betValue <= 0 || balance < betValue) return;
+
+    balance -= betValue;
+    updateBalanceDisplay();
+
     const newBall = createBall();
     ballSpeed(newBall);
     balls.push(newBall);
 });
+
+
 
 // zacinanie s prvou gulou
 //balls.push(createBall());
 //ballSpeed(balls[0]);
 
 
-
+updateBalanceDisplay();
 animate();

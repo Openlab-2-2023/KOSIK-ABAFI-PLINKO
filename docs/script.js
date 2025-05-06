@@ -1,11 +1,9 @@
 const canvas = document.getElementById("defaultcanvas");
 const ctx = canvas.getContext("2d");
-;;
 const scaleFactor = window.devicePixelRatio || 1;
 canvas.width = canvas.clientWidth * scaleFactor;
 canvas.height = canvas.clientHeight * scaleFactor;
 ctx.scale(scaleFactor, scaleFactor);
-
 //hodnoty pre mapu
 let pegRadius = 5;
 const spacingX = 40;
@@ -19,19 +17,17 @@ let gravity = 0.25;
 let layoutMode = "grid";
 let wallstype = "normal";
 let wallstype2 = "normal";
+let currentBet = 0;
+let activeBalls = 0;
 
 // nastavitelne pole multiplierov
-const multipliers = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-
+const multipliers = [
+    18, 6, 2, 0.75, 0.5, 0.2, 0.2, 0.5, 0.75, 2, 6, 18
+];
 const multiplierRects = [];
-
 let pegs = [];
-
-
-
 // pole pre gulicky 
 let balls = [];
-
 // Balance system
 let balance = 1000;
 const balanceDisplay = document.getElementById("balance");
@@ -75,7 +71,7 @@ function ballSpeed(ball) {
     ball.dy = ball.speed * Math.sin(ball.angle);
 }
 
-//random X pozicia vramci kolikov
+//random X pozicia vramci stredu
 function getRandomXPosition() {
     const minX = 300;
     const maxX = 400;
@@ -132,26 +128,21 @@ function drawPegs() {
     drawMultipliers();
 }
 function drawMultipliers() {
-    //hodnoty multiplieroch
+    // hodnoty multiplieroch
     const multiplierWidth = 50;
     const multiplierHeight = 30;
     const verticalSpacing = -10;
     const multiplierSpacing = 50; // miesto medzi multipliermi
-
     multiplierRects.length = 0;
-
     for (let col = 0; col < multipliers.length; col++) {
         const multiplierWidth = 55;
         const multiplierHeight = 30;
         const verticalSpacing = -10;
         const multiplierSpacing = 55;
-
-        const x = col * multiplierSpacing + xOffset - 7 + multiplierSpacing / 2;
+        const x = col * multiplierSpacing + xOffset -7 + multiplierSpacing / 2;
         const y = (rows * spacingY) + yOffset + verticalSpacing;
-
-        //kreslenie jedneho multiplieru
+        // kreslenie jedneho multiplieru
         drawMultiplier(x, y, multipliers[col], multiplierWidth, multiplierHeight, 15);
-
         multiplierRects.push({
             x: x - multiplierWidth / 2,
             y: y - multiplierHeight / 2 + 15,
@@ -165,11 +156,24 @@ function drawMultipliers() {
 //checkovanie kolízií na multiplieroch
 function checkMultiplierCollision(ball, index) {
     for (const rect of multiplierRects) {
-        const withinX = ball.x + ball.radius > rect.x && ball.x - ball.radius < rect.x + rect.width;
-        const withinY = ball.y + ball.radius > rect.y && ball.y - ball.radius < rect.y + rect.height;
-
+        const withinX = ball.x + ball.radius > rect.x && 
+                       ball.x - ball.radius < rect.x + rect.width;
+        const withinY = ball.y + ball.radius > rect.y && 
+                       ball.y - ball.radius < rect.y + rect.height;
         if (withinX && withinY) {
-            balls.splice(index, 1); // odstrani gulicku po dopade
+            // Vypočítaj výhru na základe pozície násobiča
+            const multiplierIndex = multiplierRects.indexOf(rect);
+            const multiplier = multipliers[multiplierIndex];
+            
+            // Použijeme pôvodnú hodnotu stávky, nie aktuálnu
+            const winnings = currentBet * multiplier;
+            
+           
+            
+            balance += winnings;
+            updateBalanceDisplay();
+            balls.splice(index, 1);
+            activeBalls--;
             return true;
         }
     }
@@ -257,34 +261,23 @@ function drawWall2() {
 function drawMultiplier(x, y, value, width, height, gap = 10) {
     const text = `×${value}`;
     const cornerRadius = 6;
-
-
     const rectX = x - width / 2;
     const rectY = y - height / 2 + gap;
-
-
-    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    // Nastav farbu podľa hodnoty násobiča
+    let color;
+    if (value >= 100) color = "#ff7f08";    // oranžová pre 100
+    else if (value >= 28) color = "#ffad08"; // tmavšia oranžová pre 28
+    else if (value >= 8) color = "#ffc508";  // žltá pre 8
+    else if (value >= 2) color = "#388e3c";  // zelená pre 2
+    else color = "#ffffff";                   // biela pre 0.6
+    ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.roundRect(
-        rectX,
-        rectY,
-        width,
-        height,
-        cornerRadius
-    );
+    ctx.roundRect(rectX, rectY, width, height, cornerRadius);
     ctx.fill();
-
-
     ctx.font = "bold 16px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-
-    // rozne farby podla hodnoty
-    if (value >= 5) ctx.fillStyle = "#ff7f08";
-    else if (value >= 2) ctx.fillStyle = "#ffad08";
-    else if (value <= 1) ctx.fillStyle = "#ffc508";
-    else ctx.fillStyle = "#388e3c";
-
+    ctx.fillStyle = "#000000";
     ctx.fillText(text, x, y + gap);
 }
 
@@ -308,6 +301,21 @@ toggleLayoutBtn.addEventListener("click", () => {
         rightWallLine = null;
     }
 });
+// Handle drop button click
+drop.addEventListener("click", () => {
+    const betValue = parseFloat(betInput.value);
+    if (isNaN(betValue) || betValue <= 0 || balance < betValue) return;
+    
+    // Uloženie hodnoty stávky pred spustením guľôčky
+    currentBet = betValue;
+    balance -= currentBet;
+    updateBalanceDisplay();
+    
+    const newBall = createBall();
+    ballSpeed(newBall);
+    balls.push(newBall);
+    activeBalls++;
+});
 
 function reflectAgainstLine(ball, x1, y1, x2, y2) {
     // Line vector
@@ -330,7 +338,6 @@ function checkCollisions() {
     let rightWallLine = null;
     for (let i = 0; i < balls.length; i++) {
         const ball = balls[i];
-
         if (checkMultiplierCollision(ball, i)) {
             i--;
             continue;
@@ -404,7 +411,7 @@ function handleCollision(ball, pegX, pegY) {
 
     // sila posunu k stredu
     const centerX = canvas.width / 2;
-    const biasStrength = 0.5; // sila posunu k stredu (0 =nic, 1 = vela)
+    const biasStrength = 0.75; // sila posunu k stredu (0 =nic, 1 = vela)
     const bias = (centerX - ball.x) * biasStrength / canvas.width;
 
     ball.dx += bias;
@@ -417,40 +424,30 @@ function handleCollision(ball, pegX, pegY) {
 // plynule animacia vsetkeho
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    drawWall1();
-    drawWall2();
     drawPegs();
-
+    drawWall1();	
+    drawWall2();
     for (const ball of balls) {
         dropBall(ball);
         drawBall(ball);
     }
-
     checkCollisions();
     requestAnimationFrame(animate);
 }
 
-// Handle drop button click
-drop.addEventListener("click", () => {
-    const betValue = parseFloat(betInput.value);
 
-    if (isNaN(betValue) || betValue <= 0 || balance < betValue) return;
+function validateBetChange() {
+    if (activeBalls > 0) {
+        alert('Nemôžete zmeniť stávku počas pohybu guľôčky!');
+        betInput.value = currentBet;
+    }
+}
 
-    balance -= betValue;
-    updateBalanceDisplay();
-
-    const newBall = createBall();
-    ballSpeed(newBall);
-    balls.push(newBall);
-});
-
-
+// Pridajte tento event listener na koniec kódu
+betInput.addEventListener('input', validateBetChange);
 
 // zacinanie s prvou gulou
 //balls.push(createBall());
 //ballSpeed(balls[0]);
-
-
 updateBalanceDisplay();
 animate();

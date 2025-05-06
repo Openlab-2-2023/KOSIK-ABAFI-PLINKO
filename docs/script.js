@@ -1,6 +1,6 @@
 const canvas = document.getElementById("defaultcanvas");
 const ctx = canvas.getContext("2d");
-
+;;
 const scaleFactor = window.devicePixelRatio || 1;
 canvas.width = canvas.clientWidth * scaleFactor;
 canvas.height = canvas.clientHeight * scaleFactor;
@@ -13,7 +13,7 @@ const spacingY = 40;
 let rows = 14;
 let cols = 16;
 const offset = spacingX / 2;
-const yOffset = 100;
+let yOffset = 100;
 let xOffset = 120;
 let gravity = 0.25;
 let layoutMode = "grid";
@@ -50,7 +50,7 @@ updateBalanceDisplay();
 function createBall() {
     return {
         x: getRandomXPosition(),
-        //x: 345,
+        //x: 350,
         y: yOffset - 150,
         speed: 3,
         direction: 1,
@@ -77,23 +77,18 @@ function ballSpeed(ball) {
 
 //random X pozicia vramci kolikov
 function getRandomXPosition() {
-    const randomCol = Math.floor(Math.random() * cols);
-    let x;
-
-    if (randomCol % 2 === 0) {
-        x = randomCol * spacingX + xOffset;
-    } else {
-        x = randomCol * spacingX + offset + xOffset;
-    }
-
-    return x;
+    const minX = 300;
+    const maxX = 400;
+    return Math.random() * (maxX - minX) + minX;
 }
+
 
 // nakreslenie kolikov v canvas
 function drawPegs() {
     pegs = []; // vymaze pole s predoslimi pegami 
 
     if (layoutMode === "grid") {
+        yOffset = 100;
         rows = 14
         wallstype = "normal"
         wallstype2 = "normal"
@@ -115,7 +110,7 @@ function drawPegs() {
             }
         }
     } else if (layoutMode === "triangle") {
-
+        yOffset = 60;
         rows = 15;
         wallstype = "angled"
         wallstype2 = "angled"
@@ -123,8 +118,10 @@ function drawPegs() {
             const numPegs = row + 1;
             const rowWidth = (numPegs - 1) * spacingX;
             const y = row * spacingY + yOffset;
-
+        
             for (let i = 0; i < numPegs; i++) {
+                if (row === 0 && i === 0) continue; 
+        
                 const x = canvas.width / 2.45 - rowWidth / 2 + i * spacingX;
                 drawPeg(x, y);
                 pegs.push({ x, y });
@@ -302,15 +299,40 @@ function dropBall(ball) {
 const toggleLayoutBtn = document.getElementById("toggleLayout");
 toggleLayoutBtn.addEventListener("click", () => {
     layoutMode = layoutMode === "grid" ? "triangle" : "grid";
+
+    if (layoutMode === "triangle") {
+        leftWallLine = { x1: 230, y1: 100, x2: 300, y2: 640 };  // adjust as needed
+        rightWallLine = { x1: 610, y1: 100, x2: 540, y2: 640 }; // adjust as needed
+    } else {
+        leftWallLine = null;
+        rightWallLine = null;
+    }
 });
+
+function reflectAgainstLine(ball, x1, y1, x2, y2) {
+    // Line vector
+    const lx = x2 - x1;
+    const ly = y2 - y1;
+    const length = Math.sqrt(lx * lx + ly * ly);
+    const nx = -ly / length;
+    const ny = lx / length;
+
+    const dot = ball.dx * nx + ball.dy * ny;
+    ball.dx -= 2 * dot * nx;
+    ball.dy -= 2 * dot * ny;
+}
 
 // kolízie pre gulicky
 function checkCollisions() {
+    let leftWallX = 115;
+    let rightWallX = 745;
+    let leftWallLine = null;
+    let rightWallLine = null;
     for (let i = 0; i < balls.length; i++) {
         const ball = balls[i];
 
         if (checkMultiplierCollision(ball, i)) {
-            i--; 
+            i--;
             continue;
         }
 
@@ -323,19 +345,29 @@ function checkCollisions() {
         }
 
         //kolizie medzi stenami
-        const wall1 = 40 + 75;
-        const wall2 = 745;
-        
+        if (layoutMode === "triangle") {
+    if (leftWallLine && ball.y >= leftWallLine.y1 && ball.y <= leftWallLine.y2 && ball.x < (leftWallLine.x1 + 10)) {
+        reflectAgainstLine(ball, leftWallLine.x1, leftWallLine.y1, leftWallLine.x2, leftWallLine.y2);
+        ball.x += 2; // small nudge to avoid getting stuck
+    }
+    if (rightWallLine && ball.y >= rightWallLine.y1 && ball.y <= rightWallLine.y2 && ball.x > (rightWallLine.x1 - 10)) {
+        reflectAgainstLine(ball, rightWallLine.x1, rightWallLine.y1, rightWallLine.x2, rightWallLine.y2);
+        ball.x -= 2;
+    }
+} else {
+    const wall1 = 40 + 75;
+    const wall2 = 745;
 
-        if (ball.x - ball.radius <= wall1) {
-            ball.x = wall1 + ball.radius;
-            ball.dx *= -1;
-        }
+    if (ball.x - ball.radius <= wall1) {
+        ball.x = wall1 + ball.radius;
+        ball.dx *= -1;
+    }
 
-        if (ball.x + ball.radius >= wall2) {
-            ball.x = wall2 - ball.radius;
-            ball.dx *= -1;
-        }
+    if (ball.x + ball.radius >= wall2) {
+        ball.x = wall2 - ball.radius;
+        ball.dx *= -1;
+    }
+}
 
         for (const peg of pegs) {
             const dist = Math.sqrt(Math.pow(ball.x - peg.x, 2) + Math.pow(ball.y - peg.y, 2));
@@ -356,33 +388,31 @@ function handleCollision(ball, pegX, pegY) {
     const nx = dx / distance;
     const ny = dy / distance;
 
-    ball.dx = Math.abs(ball.dx) * alternateX(ball);
-
+  
     const dotProduct = ball.dx * nx + ball.dy * ny;
     ball.dx -= 2 * dotProduct * nx;
     ball.dy -= 2 * dotProduct * ny;
+
+
+    ball.dx *= 0.5;
+    ball.dy *= 0.5;
+
 
     const overlap = ball.radius + pegRadius - distance;
     ball.x += nx * overlap;
     ball.y += ny * overlap;
 
-    ball.dx += (Math.random() - 0.5) * 0.5;
-    ball.dx *= 0.5;
-    ball.dy *= 0.5;
-}
-//striedanie osi, prvy odraz = vacsi odraz, druhy = normalny
-function alternateX(ball) {
-    if (ball.firstCollision) {
-        ball.firstCollision = false;
-        const direction = Math.random() < 0.5 ? -1 : 1;
-        ball.x += direction * 2;
-        return direction;
-    }
+    // sila posunu k stredu
+    const centerX = canvas.width / 2;
+    const biasStrength = 0.5; // sila posunu k stredu (0 =nic, 1 = vela)
+    const bias = (centerX - ball.x) * biasStrength / canvas.width;
 
-    const direction = Math.random() < 0.5 ? -1 : 1;
-    ball.x += direction;
-    return direction;
+    ball.dx += bias;
+
+   
+    ball.dx += (Math.random() - 0.5) * 0.2;
 }
+
 
 // plynule animacia vsetkeho
 function animate() {

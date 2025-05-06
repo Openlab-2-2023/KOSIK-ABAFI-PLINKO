@@ -16,6 +16,8 @@ const yOffset = 100;
 let xOffset = 120;
 let gravity = 0.25;
 let layoutMode = "grid";
+let currentBet = 0;
+let activeBalls = 0;
 
 // nastavitelne pole multiplierov
 const multipliers = [
@@ -98,7 +100,8 @@ function drawPegs() {
             }
         }
     } else if (layoutMode === "triangle") {
-        rows = 15;
+        // Teraz môžete nastaviť rows priamo
+        rows = 15; // Zmeňte toto číslo podľa potreby
         for (let row = 0; row < rows; row++) {
             const numPegs = row + 1;
             const rowWidth = (numPegs - 1) * spacingX;
@@ -145,24 +148,20 @@ function handleMultiplierCollision(ball, index) {
                        ball.x - ball.radius < rect.x + rect.width;
         const withinY = ball.y + ball.radius > rect.y && 
                        ball.y - ball.radius < rect.y + rect.height;
-        
         if (withinX && withinY) {
             // Vypočítaj výhru na základe pozície násobiča
             const multiplierIndex = multiplierRects.indexOf(rect);
             const multiplier = multipliers[multiplierIndex];
             
-            // Vypočítaj výhru (použije sa stávka z betInput)
-            const betValue = parseFloat(betInput.value);
-            const winnings = betValue * multiplier;
+            // Použijeme pôvodnú hodnotu stávky, nie aktuálnu
+            const winnings = currentBet * multiplier;
             
-            // Pridaj výhru k zostатку
+           
+            
             balance += winnings;
-            
-            // Aktualizuj zobrazenie zostatku
             updateBalanceDisplay();
-            
-            // Odstráň gulu po dopade
             balls.splice(index, 1);
+            activeBalls--;
             return true;
         }
     }
@@ -210,7 +209,6 @@ function drawMultiplier(x, y, value, width, height, gap = 10) {
     const cornerRadius = 6;
     const rectX = x - width / 2;
     const rectY = y - height / 2 + gap;
-    
     // Nastav farbu podľa hodnoty násobiča
     let color;
     if (value >= 100) color = "#ff7f08";    // oranžová pre 100
@@ -218,12 +216,10 @@ function drawMultiplier(x, y, value, width, height, gap = 10) {
     else if (value >= 8) color = "#ffc508";  // žltá pre 8
     else if (value >= 2) color = "#388e3c";  // zelená pre 2
     else color = "#ffffff";                   // biela pre 0.6
-    
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.roundRect(rectX, rectY, width, height, cornerRadius);
     ctx.fill();
-    
     ctx.font = "bold 16px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -241,6 +237,22 @@ function dropBall(ball) {
 const toggleLayoutBtn = document.getElementById("toggleLayout");
 toggleLayoutBtn.addEventListener("click", () => {
     layoutMode = layoutMode === "grid" ? "triangle" : "grid";
+});
+
+// Handle drop button click
+drop.addEventListener("click", () => {
+    const betValue = parseFloat(betInput.value);
+    if (isNaN(betValue) || betValue <= 0 || balance < betValue) return;
+    
+    // Uloženie hodnoty stávky pred spustením guľôčky
+    currentBet = betValue;
+    balance -= currentBet;
+    updateBalanceDisplay();
+    
+    const newBall = createBall();
+    ballSpeed(newBall);
+    balls.push(newBall);
+    activeBalls++;
 });
 
 // kolízie pre gulicky
@@ -323,16 +335,16 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-// Handle drop button click
-drop.addEventListener("click", () => {
-    const betValue = parseFloat(betInput.value);
-    if (isNaN(betValue) || betValue <= 0 || balance < betValue) return;
-    balance -= betValue;
-    updateBalanceDisplay();
-    const newBall = createBall();
-    ballSpeed(newBall);
-    balls.push(newBall);
-});
+// Pridajte túto funkciu pre kontrolu zmien stávky
+function validateBetChange() {
+    if (activeBalls > 0) {
+        alert('Nemôžete zmeniť stávku počas pohybu guľôčky!');
+        betInput.value = currentBet;
+    }
+}
+
+// Pridajte tento event listener na koniec kódu
+betInput.addEventListener('input', validateBetChange);
 
 // zacinanie s prvou gulou
 //balls.push(createBall());

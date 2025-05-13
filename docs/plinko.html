@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <div id="layout">
         <div id="menu">
@@ -15,15 +13,13 @@
                 <button id="drop" onclick="drawBall()">Drop</button>
                 <button id="toggleLayout">Toggle Layout</button>
             </div>
-            <h1 id="balance">balance</h1>
+            <h1 id="balance" style="color: rgb(255, 255, 255);">balance</h1>
             <div id="bet">
-                Bet: <input type="number" id="betInput" value="100" onchange="updateBet()">
+                <span style="color: white;">Bet: </span><input type="number" id="betInput" value="100" onchange="updateBet()">
             </div>
         </div>
         <canvas width="500" height="500" id="defaultcanvas"></canvas>
     </div>
+    <script src="script.js"></script>
 </body>
-
-<script src="script.js"></script>
-
 </html>

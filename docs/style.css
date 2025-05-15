@@ -1,34 +1,36 @@
-/* Základné štýly */
+
 body {
     margin: 0;
     padding: 0;
+    justify-content: center;
+    display: flex;
     min-height: 100vh;
     background: #1a1a1a;
+}
+
+#defaultcanvas {
+    background-color: #46a76b;
+    position: relative;
+    height: 800px;
+    width: 100%;
+    max-width: 1200px;
     display: flex;
     justify-content: center;
 }
 
-/* Menu štýly */
 #menu {
-    height: 100vh;
-    width: 300px;
-    background-color: rgb(64, 64, 64);
+    height: 800px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    position: fixed;
-    left: 0;
-    top: 0;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+    width: 300px;
+    background-color: rgb(64, 64, 64);
 }
 
-#buttons {
+#layout {
     display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
-    padding: 25px;
+    flex-direction: row;
 }
 
 button {
@@ -49,7 +51,6 @@ button:hover {
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
-/* BET sekcia štýly */
 #betInput {
     width: 125px;
     padding: 10px;
@@ -75,53 +76,6 @@ button:hover {
     margin: 10px 0;
 }
 
-#drop {
-    background: linear-gradient(to right, #58df87, #46a76b);
-    height: 50px;
-    width: 100%;
-    border-radius: 8px;
-    border: none;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    transition: transform 0.2s, box-shadow 0.2s;
-    margin: 10px 0;
-}
-
-#drop:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-}
-
-/* Responzívne štýly */
-@media (max-width: 768px) {
-    #menu {
-        width: 100%;
-        height: auto;
-        min-height: 100vh;
-        position: fixed;
-        top: 0;
-        left: -300px;
-        transition: left 0.3s ease;
-    }
-    
-    #menu.active {
-        left: 0;
-    }
-}
-
-/* Canvas štýly */
-#defaultcanvas {
-    background-color: #46a76b;
-    position: relative;
-    height: 800px;
-    width: 100%;
-    max-width: 1200px;
-    display: flex;
-    justify-content: center;
-}
-
-/* Block štýly */
 .block {
     position: absolute;
     width: 50px;
@@ -140,7 +94,6 @@ button:hover {
     transition: transform 0.2s;
 }
 
-/* Controls štýly */
 .controls {
     margin: 10px 0;
     display: flex;
@@ -151,3 +104,43 @@ button:hover {
     width: 60px;
     padding: 5px;
 }
+
+#drop {
+    background: linear-gradient(to right, #58df87, #46a76b);
+    height: 50px;
+    width: 100%;
+    border-radius: 8px;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin: 10px 0;
+}
+
+.controls {
+    margin: 10px 0;
+    display: flex;
+    gap: 10px;
+}
+
+#rowsInput {
+    width: 60px;
+    padding: 5px;
+}
+
+
+    #menu {
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        position: fixed;
+        top: 0;
+        left: -300px;
+        transition: left 0.3s ease;
+    }
+    
+    #menu.active {
+        left: 0;
+    }
+

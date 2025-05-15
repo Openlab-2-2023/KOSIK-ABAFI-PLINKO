@@ -1,0 +1,63 @@
+        .clicker-section {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 8px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+        #clicker {
+            cursor: pointer;
+            padding: 20px;
+            background: linear-gradient(145deg, #4CAF50, #45a048);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: all 0.5s ease-in-out;
+            opacity: 0;
+            transform: scale(0.8);
+            position: absolute;
+            z-index: 100;
+        }
+
+        #clicker.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        #clicker.hidden {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        #balance {
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-align: center;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 101;
+        }
+
+        .balance-info {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            text-align: center;
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 101;
+        }

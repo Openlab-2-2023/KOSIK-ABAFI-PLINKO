@@ -259,6 +259,16 @@ function drawMultiplier(x, y, value, width, height, gap = 10) {
     ctx.fillText(text, x, y + gap);
 }
 
+function drawBottomLine() {
+    const lineY = (rows * spacingY) + yOffset + 40;
+    ctx.beginPath();
+    ctx.moveTo(xOffset, lineY);
+    ctx.lineTo(canvas.width - xOffset, lineY);
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
+
 //  padanie gulicky 
 function dropBall(ball) {
     ball.dy += gravity;
@@ -295,6 +305,11 @@ function reflectAgainstLine(ball, x1, y1, x2, y2) {
     const dot = ball.dx * nx + ball.dy * ny;
     ball.dx -= 2 * dot * nx;
     ball.dy -= 2 * dot * ny;
+
+    // Dampening after bouncing off funnel walls
+    const dampingFactor = 0.5; // adjust this (0.5 = 50% speed retained)
+    ball.dx *= dampingFactor;
+    ball.dy *= dampingFactor;
 }
 // kolízie pre gulicky
 function checkCollisions() {
@@ -302,8 +317,8 @@ function checkCollisions() {
     let rightWallLine = null;
 
     if (layoutMode === "triangle") {
-        leftWallLine = { x1: 10, y1: 90, x2: 400, y2: 130 };
-        rightWallLine = { x1: 500, y1: 130, x2: 960, y2: 80 };
+        leftWallLine = { x1: 10, y1: 90, x2: 410, y2: 130 };
+        rightWallLine = { x1: 475, y1: 130, x2: 960, y2: 80 };
     }
 
     for (let i = 0; i < balls.length; i++) {
@@ -312,7 +327,13 @@ function checkCollisions() {
             i--;
             continue;
         }
-
+        
+        const trampolineY = (rows * spacingY) + yOffset + 20;
+if (ball.y + ball.radius >= trampolineY && ball.dy > 0) {
+    ball.y = trampolineY - ball.radius;
+    ball.dy *= -2; // reverse and dampen vertical speed
+    ball.dx *= 0.95; // slightly reduce horizontal drift
+}
 
         // vymazanie guli ak prejdu canvas
         if (ball.y > canvas.height + ball.radius) {
@@ -383,6 +404,7 @@ function animate() {
     drawPegs();
     drawWall1();
     drawWall2();
+    drawBottomLine();
     for (const ball of balls) {
         dropBall(ball);
         drawBall(ball);

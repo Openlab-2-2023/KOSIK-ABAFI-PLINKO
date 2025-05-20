@@ -27,22 +27,37 @@ const multiplierRects = [];
 let pegs = [];
 let balls = [];
 
+
+
 // Balance system
-let balance = 1000;
-const balanceDisplay = document.getElementById("balance");
+let balanceDisplay = document.getElementById("balance");
 const bet50 = document.getElementById("bet50");
 const bet100 = document.getElementById("bet100");
 const bet1k = document.getElementById("bet1k");
 const bet12 = document.getElementById("bet12");
 const betAIN = document.getElementById("betAIN");
 
-// updatovanie balance
-function updateBalanceDisplay() {
-    balanceDisplay.textContent = "Balance: " + balance;
+// sleduje zemny balance na update balancu 
+function updateBalanceDisplay(newBalance) {
+    balanceDisplay.textContent = "Balance: " + newBalance;
 }
-updateBalanceDisplay();
 
 
+document.getElementById('bet12').addEventListener('click', () => {
+    const halfBalance = BalanceManager.getBalance() / 2;
+    setBet(Math.floor(halfBalance));
+});
+
+document.getElementById('betAIN').addEventListener('click', () => {
+    const allIn = BalanceManager.getBalance();
+    setBet(allIn);
+});
+
+// sleduje zmeny balancu
+BalanceManager.subscribe(updateBalanceDisplay);
+
+// update UI na loadu
+updateBalanceDisplay(BalanceManager.getBalance());
 
 
 // vytvorenie gulicky, hodnoty gulicky
@@ -52,7 +67,7 @@ function createBall() {
         x: getRandomXPosition(),
         y: yOffset - 150,
         //x: 350,
-        speed: 1,
+        speed: 1.5,
         direction: 1,
         radius: 10,
         angle: Math.PI / 4,
@@ -113,7 +128,7 @@ function drawPegs() {
         wallstype = "angled"
         wallstype2 = "angled"
       for (let row = 0; row < rows; row++) {
-    if (row < 2) continue; // Skip the top two rows of triangle layout
+    if (row < 2) continue; // skipne dva prve riadky
     const numPegs = row + 1;
     const rowWidth = (numPegs - 1) * spacingX;
     const y = row * spacingY + yOffset;
@@ -159,8 +174,7 @@ function checkMultiplierCollision(ball, index) {
             const multiplier = multipliers[multiplierIndex];
             // Vypočítaj výhru na základe pozície multipliera
             const winnings = currentBet * multiplier;
-            balance += winnings;
-            updateBalanceDisplay();
+           BalanceManager.add(winnings);
             balls.splice(index, 1);
             activeBalls--;
             return true;
@@ -289,12 +303,12 @@ toggleLayoutBtn.addEventListener("click", () => {
 
 drop.addEventListener("click", () => {
     const betValue = parseFloat(betInput.value);
-    if (isNaN(betValue) || betValue <= 0 || balance < betValue) return;
+    if (isNaN(betValue) || betValue <= 0 ||  BalanceManager.getBalance()  < betValue) return;
     
     // Uloženie hodnoty stávky pred spustením guľôčky
     currentBet = betValue;
-    balance -= currentBet;
-    updateBalanceDisplay();
+    BalanceManager.subtract(currentBet);
+
     const newBall = createBall();
     ballSpeed(newBall);
     balls.push(newBall);
@@ -336,7 +350,7 @@ function checkCollisions() {
         const trampolineY = (rows * spacingY) + yOffset + 20;
 if (ball.y + ball.radius >= trampolineY && ball.dy > 0) {
     ball.y = trampolineY - ball.radius;
-    ball.dy *= -2; // reverse and dampen vertical speed
+    ball.dy *= -1; // reverse and dampen vertical speed
     ball.dx *= 0.95; // slightly reduce horizontal drift
 }
 
@@ -443,5 +457,4 @@ betInput.addEventListener('input', validateBetChange);
 // zacinanie s prvou gulou
 //balls.push(createBall());
 //ballSpeed(balls[0]);
-updateBalanceDisplay();
 animate();

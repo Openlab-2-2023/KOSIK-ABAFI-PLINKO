@@ -1,34 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="layout">
-        <div id="menu">
-            <h1 id="balance" style="color: rgb(255, 255, 255); font-family: Arial, Helvetica, sans-serif;">balance</h1>
-             <div id="bet">
-                <span style="color: white; font-family: Arial, Helvetica, sans-serif;" >Bet: </span><input type="number" id="betInput" value="100" onchange="updateBet()">
-                <div class="bet-buttons">
-                    <button id="bet50" onclick="setBet(50)">50</button>
-                    <button id="bet100" onclick="setBet(100)">100</button>
-                    <button id="bet1k" onclick="setBet(1000)">1k</button>
-                    <button id="bet12" onclick="setBet(balance/2)">1/2</button>
-                    <button id="betAIN" onclick="setBet(balance)">ALL IN</button>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div id="layout">
+            <div id="menu">
+                <h1 id="balance" style="color: rgb(255, 255, 255); font-family: Arial, Helvetica, sans-serif;">balance</h1>
+                <div id="bet">
+                    <span style="color: white; font-family: Arial, Helvetica, sans-serif;" >Bet: </span><input type="number" id="betInput" value="100" onchange="updateBet()">
+                    <div class="bet-buttons">
+                        <button id="bet50" onclick="setBet(50)">50</button>
+                        <button id="bet100" onclick="setBet(100)">100</button>
+                        <button id="bet1k" onclick="setBet(1000)">1k</button>
+                        <button id="bet12">1/2</button>
+                        <button id="betAIN">ALL IN</button>
+                    </div>
                 </div>
-            </div>
-            <div id="buttons">
-                <button id="drop" onclick="drawBall()">Drop</button>
-                <button id="toggleLayout">Toggle Layout</button>
-            </div>
+                <div id="buttons">
+                    <button id="drop" onclick="drawBall()">Drop</button>
+                    <button id="toggleLayout">Toggle Layout</button>
+                </div>
+                
             
-           
+            </div>
+            <canvas width="500" height="500" id="defaultcanvas"></canvas>
         </div>
-        <canvas width="500" height="500" id="defaultcanvas"></canvas>
-    </div>
-    <script src="script.js"></script>
-</body>
-</html>
+        <script src="balanceManager.js"></script>
+        <script src="script.js"></script>
+        
+    
+    </body>
+    </html>

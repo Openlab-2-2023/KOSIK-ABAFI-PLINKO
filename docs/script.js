@@ -22,7 +22,7 @@ let currentBet = 0;
 let activeBalls = 0;
 
 // nastavitelne pole multiplierov
-const multipliers = [18, 6, 2, 0.75, 0.5, 0.2, 0.2, 0.5, 0.75, 2, 6, 18];
+const multipliers = [18, 6, 2, 1.2, 0.75, 0.25, 0.25, 0.75, 1.2, 2, 6, 18];
 const multiplierRects = [];
 let pegs = [];
 let balls = [];
@@ -30,14 +30,19 @@ let balls = [];
 // Balance system
 let balance = 1000;
 const balanceDisplay = document.getElementById("balance");
-const drop = document.getElementById("drop");
-const betInput = document.getElementById("betInput");
+const bet50 = document.getElementById("bet50");
+const bet100 = document.getElementById("bet100");
+const bet1k = document.getElementById("bet1k");
+const bet12 = document.getElementById("bet12");
+const betAIN = document.getElementById("betAIN");
 
 // updatovanie balance
 function updateBalanceDisplay() {
     balanceDisplay.textContent = "Balance: " + balance;
 }
 updateBalanceDisplay();
+
+
 
 
 // vytvorenie gulicky, hodnoty gulicky
@@ -185,11 +190,11 @@ function drawWall1() {
     ctx.save();
 
     if (layoutMode === "triangle") {
-        ctx.strokeStyle = "black"; // color of the funnel wall
+        ctx.strokeStyle = "black"; 
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(10, 90); // funnel top-left
-        ctx.lineTo(390, 130); // funnel bottom-left
+        ctx.moveTo(10, 90); 
+        ctx.lineTo(390, 130); 
         ctx.stroke();
     } else if (wallstype === "normal") {
         ctx.beginPath();
@@ -212,11 +217,11 @@ function drawWall2() {
     ctx.save();
 
     if (layoutMode === "triangle") {
-        ctx.strokeStyle = "black"; // color of the funnel wall
+        ctx.strokeStyle = "black"; 
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(960, 80); // funnel top-right
-        ctx.lineTo(495, 130); // funnel bottom-right
+        ctx.moveTo(960, 80); 
+        ctx.lineTo(495, 130); 
         ctx.stroke();
     } else if (wallstype2 === "normal") {
         ctx.beginPath();
@@ -245,8 +250,8 @@ function drawMultiplier(x, y, value, width, height, gap = 10) {
     if (value >= 12) color = "#ff7f08";
     else if (value >= 6) color = "#ffad08";
     else if (value >= 2) color = "#ffc508";
-    else if (value >= 0.75) color = "#fff3a3";
-    else if (value >= 0.5) color = "#fffbe0";
+    else if (value >= 1.2) color = "#fff3a3";
+    else if (value >= 0.75) color = "#fffbe0";
     else color = "#ffffff";
     ctx.fillStyle = color;
     ctx.beginPath();
@@ -257,6 +262,16 @@ function drawMultiplier(x, y, value, width, height, gap = 10) {
     ctx.textBaseline = "middle";
     ctx.fillStyle = "#000000";
     ctx.fillText(text, x, y + gap);
+}
+
+function drawBottomLine() {
+    const lineY = (rows * spacingY) + yOffset + 40;
+    ctx.beginPath();
+    ctx.moveTo(xOffset, lineY);
+    ctx.lineTo(canvas.width - xOffset, lineY);
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 2;
+    ctx.stroke();
 }
 
 //  padanie gulicky 
@@ -295,6 +310,11 @@ function reflectAgainstLine(ball, x1, y1, x2, y2) {
     const dot = ball.dx * nx + ball.dy * ny;
     ball.dx -= 2 * dot * nx;
     ball.dy -= 2 * dot * ny;
+
+    // Dampening after bouncing off funnel walls
+    const dampingFactor = 0.5; // adjust this (0.5 = 50% speed retained)
+    ball.dx *= dampingFactor;
+    ball.dy *= dampingFactor;
 }
 // kolízie pre gulicky
 function checkCollisions() {
@@ -302,8 +322,8 @@ function checkCollisions() {
     let rightWallLine = null;
 
     if (layoutMode === "triangle") {
-        leftWallLine = { x1: 10, y1: 90, x2: 400, y2: 130 };
-        rightWallLine = { x1: 500, y1: 130, x2: 960, y2: 80 };
+        leftWallLine = { x1: 10, y1: 90, x2: 410, y2: 130 };
+        rightWallLine = { x1: 465, y1: 130, x2: 960, y2: 80 };
     }
 
     for (let i = 0; i < balls.length; i++) {
@@ -312,7 +332,13 @@ function checkCollisions() {
             i--;
             continue;
         }
-
+        
+        const trampolineY = (rows * spacingY) + yOffset + 20;
+if (ball.y + ball.radius >= trampolineY && ball.dy > 0) {
+    ball.y = trampolineY - ball.radius;
+    ball.dy *= -2; // reverse and dampen vertical speed
+    ball.dx *= 0.95; // slightly reduce horizontal drift
+}
 
         // vymazanie guli ak prejdu canvas
         if (ball.y > canvas.height + ball.radius) {
@@ -383,6 +409,8 @@ function animate() {
     drawPegs();
     drawWall1();
     drawWall2();
+    
+    drawBottomLine();
     for (const ball of balls) {
         dropBall(ball);
         drawBall(ball);
@@ -390,6 +418,19 @@ function animate() {
     checkCollisions();
     requestAnimationFrame(animate);
 }
+
+// bet možnosti, a prevencia menenia betov počas padania guličky
+function setBet(amount) {
+    if (activeBalls > 0) {
+        alert('Nemôžete zmeniť stávku počas pohybu guľôčky!');
+        betInput.value = currentBet; 
+        return;
+    }
+
+    betInput.value = amount;
+    updateBet();
+}
+
 
 function validateBetChange() {
     if (activeBalls > 0) {

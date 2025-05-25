@@ -1,6 +1,5 @@
-
-        .clicker-section {
-            background: #f0f0f0;
+.clicker-section {
+            background: rgb(64, 64, 64);
             padding: 20px;
             border-radius: 8px;
             position: fixed;
@@ -17,16 +16,22 @@
         #clicker {
             cursor: pointer;
             padding: 20px;
-            background: linear-gradient(145deg, #4CAF50, #45a048);
+            background: linear-gradient(145deg, #58df87, #46a76b);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 50%;
             margin-bottom: 20px;
             transition: all 0.5s ease-in-out;
             opacity: 0;
             transform: scale(0.8);
             position: absolute;
             z-index: 100;
+            font-size: 24px;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         #clicker.visible {
@@ -42,16 +47,19 @@
         #balance {
             font-size: 24px;
             margin-bottom: 10px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: bold;
             text-align: center;
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 101;
+            color: #46a76b;
         }
 
         .balance-info {
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
             padding: 10px;
             border-radius: 4px;
             margin-top: 10px;
@@ -61,4 +69,5 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 101;
+            color: white;
         }

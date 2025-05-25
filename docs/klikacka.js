@@ -1,26 +1,27 @@
-function updateBalanceDisplay(newBalance) {
-    const balanceDisplay = document.getElementById("balance");
-    if (balanceDisplay) {
-        balanceDisplay.textContent = "Balance: " + newBalance;
-    }
+function formatNumber(num) {
+    if (num >= 1_000_000_000_000) return (num / 1_000_000_000_000).toFixed(2) + 'T';
+    if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(2) + 'B';
+    if (num >= 1_000_000) return (num / 1_000_000).toFixed(2) + 'M';
+    if (num >= 1_000) return (num / 1_000).toFixed(2) + 'k';
+    return num.toFixed(2);
 }
-
-
-BalanceManager.subscribe(updateBalanceDisplay);
-updateBalanceDisplay(BalanceManager.getBalance());
-
-
 const clicker = {
     isVisible: false,
     intervalId: null,
+    lastClickTime: 0,
+    cooldownDuration: 100,
 
     init() {
         this.startButtonVisibilityCycle();
         document.getElementById('clicker').addEventListener('click', () => this.handleClick());
 
-        // sleduje zmeny balancu 
-        BalanceManager.subscribe(this.updateDisplay.bind(this));
+        // blokuje vstup všetkych klavies
+        window.addEventListener('keydown', (event) => {
+            event.preventDefault();
+        });
 
+       
+        BalanceManager.subscribe(this.updateDisplay.bind(this));
         this.updateDisplay(BalanceManager.getBalance());
     },
 
@@ -66,19 +67,26 @@ const clicker = {
     },
 
     handleClick() {
-        if (this.isVisible) {
-            BalanceManager.add(25);  // pridavanie na klik balance
+        const currentTime = Date.now();
+
+        if (currentTime - this.lastClickTime >= this.cooldownDuration && this.isVisible) {
+            BalanceManager.add(25);  // pridavanie do celkove balance
+            this.lastClickTime = currentTime;
+
             this.hideButton();
             setTimeout(() => {
                 this.showButton();
                 this.moveButton();
-            }, 2000);
+            }, 100);
         }
     },
 
     updateDisplay(currentBalance) {
-        document.getElementById('balance').textContent = `Balance: ${currentBalance}`;
+       const formatted = formatNumber(currentBalance);
+    document.getElementById('balance').textContent = `Balance: ${formatted}`;
     }
 };
+
+
 
 window.onload = () => clicker.init();

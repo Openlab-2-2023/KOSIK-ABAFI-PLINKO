@@ -1,11 +1,10 @@
-rozne gulicky za balance
-sposob zarabania
-upgrade za balance
-za balance mapy
-rozne difficulty
-historia
+rozne gulicky za balance x
+sposob zarabania </
+upgrade za balance x
+za balance mapy x
+rozne difficulty x
 
-mapa, gulicka, fyzika ovplyvnena sancou
+mapa, gulicka, fyzika ovplyvnena sancou </
 
 
 "Find yourself a job and stop wasting money"

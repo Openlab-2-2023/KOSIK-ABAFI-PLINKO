@@ -22,12 +22,30 @@ let currentBet = 0;
 let activeBalls = 0;
 
 // nastavitelne pole multiplierov
-const multipliers = [18, 6, 2, 1.2, 0.75, 0.25, 0.25, 0.75, 1.2, 2, 6, 18];
+let currentRisk = "medium";
+let multipliers = [0];
+function startMultipliers() {
+    if (layoutMode === "grid") {
+        multipliers = [18, 6, 2, 1.2, 0.8, 0.3, 0.3, 0.8, 1.2, 2, 6, 18];
+        
+    }
+    if (layoutMode === "triangle") {
+        multipliers = [18, 6, 2, 1.2, 0.75, 0.25, 0.75, 1.2, 2, 6, 18];
+        
+    }
+}
+startMultipliers();
 const multiplierRects = [];
 let pegs = [];
 let balls = [];
 
-
+function formatNumber(num) {
+    if (num >= 1_000_000_000_000) return (num / 1_000_000_000_000).toFixed(2) + 'T';
+    if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(2) + 'B';
+    if (num >= 1_000_000) return (num / 1_000_000).toFixed(2) + 'M';
+    if (num >= 1_000) return (num / 1_000).toFixed(2) + 'k';
+    return num.toFixed(2);
+}
 
 // Balance system
 let balanceDisplay = document.getElementById("balance");
@@ -37,9 +55,16 @@ const bet1k = document.getElementById("bet1k");
 const bet12 = document.getElementById("bet12");
 const betAIN = document.getElementById("betAIN");
 
+document.addEventListener('keydown', function (event) {
+    if (event.code === 'Space' || event.code === 'Enter') {
+        event.preventDefault();
+        console.log(`${event.code} is blocked`);
+    }
+});
+
 // sleduje zemny balance na update balancu 
 function updateBalanceDisplay(newBalance) {
-    balanceDisplay.textContent = "Balance: " + newBalance;
+    balanceDisplay.textContent = "Balance: " + formatNumber(newBalance);
 }
 
 
@@ -102,9 +127,11 @@ function drawPegs() {
 
     if (layoutMode === "grid") {
         yOffset = 100;
-        rows = 14
-        wallstype = "normal"
-        wallstype2 = "normal"
+        xOffset = 120;
+        //multipliers = [18, 6, 2, 1.2, 0.8, 0.3, 0.3, 0.8, 1.2, 2, 6, 18];
+        rows = 14;
+        wallstype = "normal";
+        wallstype2 = "normal";
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
                 let x;
@@ -124,22 +151,25 @@ function drawPegs() {
         }
     } else if (layoutMode === "triangle") {
         yOffset = 60;
+        xOffset = 145;
         rows = 15;
-        wallstype = "angled"
-        wallstype2 = "angled"
-      for (let row = 0; row < rows; row++) {
-    if (row < 2) continue; // skipne dva prve riadky
-    const numPegs = row + 1;
-    const rowWidth = (numPegs - 1) * spacingX;
-    const y = row * spacingY + yOffset;
+        //multipliers = [18, 6, 2, 1.2, 0.75, 0.25, 0.75, 1.2, 2, 6, 18];
+        wallstype = "angled";
+        wallstype2 = "angled";
+        for (let row = 0; row < rows; row++) {
+            if (row < 2) continue; // skipne dva prve riadky
+            const numPegs = row + 1;
+            const rowWidth = (numPegs - 1) * spacingX;
+            const y = row * spacingY + yOffset;
 
-    for (let i = 0; i < numPegs; i++) {
-        const x = canvas.width / 2.45 - rowWidth / 2 + i * spacingX;
-        drawPeg(x, y);
-        pegs.push({ x, y });
+            for (let i = 0; i < numPegs; i++) {
+                const x = canvas.width / 2.45 - rowWidth / 2 + i * spacingX;
+                drawPeg(x, y);
+                pegs.push({ x, y });
+            }
+        }
     }
-}
-    }
+
 
     drawMultipliers();
 }
@@ -162,6 +192,7 @@ function drawMultipliers() {
         });
     }
 }
+
 //checkovanie kolízií na multiplieroch
 function checkMultiplierCollision(ball, index) {
     for (const rect of multiplierRects) {
@@ -174,7 +205,7 @@ function checkMultiplierCollision(ball, index) {
             const multiplier = multipliers[multiplierIndex];
             // Vypočítaj výhru na základe pozície multipliera
             const winnings = currentBet * multiplier;
-           BalanceManager.add(winnings);
+            BalanceManager.add(winnings);
             balls.splice(index, 1);
             activeBalls--;
             return true;
@@ -204,11 +235,12 @@ function drawWall1() {
     ctx.save();
 
     if (layoutMode === "triangle") {
-        ctx.strokeStyle = "black"; 
+        //ctx.strokeStyle = "black";
+        ctx.strokeStyle = "rgba(0, 0, 0, 0)"
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(10, 90); 
-        ctx.lineTo(390, 130); 
+        ctx.moveTo(370, 160);
+        ctx.lineTo(190, 525);
         ctx.stroke();
     } else if (wallstype === "normal") {
         ctx.beginPath();
@@ -231,11 +263,12 @@ function drawWall2() {
     ctx.save();
 
     if (layoutMode === "triangle") {
-        ctx.strokeStyle = "black"; 
+        //ctx.strokeStyle = "black";
+        ctx.strokeStyle = "rgba(0, 0, 0, 0)"
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(960, 80); 
-        ctx.lineTo(495, 130); 
+        ctx.moveTo(520, 160);
+        ctx.lineTo(690, 525);
         ctx.stroke();
     } else if (wallstype2 === "normal") {
         ctx.beginPath();
@@ -248,7 +281,7 @@ function drawWall2() {
         const centerY = 15 + 680 / 2;
         ctx.translate(centerX, centerY);
         ctx.rotate(-Math.PI / 7);
-        ctx.fillRect(-75 / 2, -430 / 2, 75, 430);
+        ctx.fillRect(-75 / 2, -420 / 2, 75, 430);
     }
 
     ctx.restore();
@@ -283,10 +316,71 @@ function drawBottomLine() {
     ctx.beginPath();
     ctx.moveTo(xOffset, lineY);
     ctx.lineTo(canvas.width - xOffset, lineY);
-    ctx.strokeStyle = "red";
+    ctx.strokeStyle = "rgba(0, 0, 0, 0)"
     ctx.lineWidth = 2;
     ctx.stroke();
 }
+
+function lowRisk() {
+    console.log("Low");
+    if (layoutMode === "grid") {
+        multiType = "grid";
+        multipliers = [6, 3, 1.5, 1.2, 0.9, 0.5, 0.5, 0.9, 1.2, 1.5, 3, 6];
+    }
+    if (layoutMode === "triangle") {
+        multiType = "triangle";
+        multipliers = [6, 3, 1.5, 1.2, 0.8, 0.4, 0.8, 1.2, 1.5, 3, 6];
+    }
+    currentRisk = "low";
+    drawPegs();
+
+}
+function mediumRisk() {
+    console.log("medium");
+    if (layoutMode === "grid") {
+    
+        multipliers = [12, 5, 3, 1.1, 0.6, 0.3, 0.3, 0.6, 1.1, 3, 5, 12];
+    }
+    if (layoutMode === "triangle") {
+    
+        multipliers = [12, 5, 3, 1.1, 0.55, 0.25, 0.55, 1.1, 3, 5, 12];
+    }
+    currentRisk = "medium";
+    drawPegs();
+}
+function highRisk() {
+    console.log("high");
+    if (layoutMode === "grid") {
+
+        multipliers = [27, 8, 1.2, 0.9, 0.4, 0.15, 0.15, 0.4, 0.9, 1.2, 8, 27];
+    }
+    if (layoutMode === "triangle") {
+        multipliers = [27, 8, 1.2, 0.9, 0.35, 0.1, 0.35, 0.9, 1.2, 8, 27];
+    }
+    currentRisk = "high";
+    drawPegs();
+}
+
+function switchLayout(newLayout) {
+    layoutMode = newLayout;
+    // Reapply multipliers for the current risk level on the new layout:
+    if (currentRisk === "low") lowRisk();
+    else if (currentRisk === "medium") mediumRisk();
+    else if (currentRisk === "high") highRisk();
+}
+
+document.getElementById("low").addEventListener("click", () => {
+    currentRisk = 'low';
+    lowRisk();
+});
+document.getElementById("medium").addEventListener("click", () => {
+    currentRisk = 'medium';
+    mediumRisk();
+});
+document.getElementById("high").addEventListener("click", () => {
+    currentRisk = 'high';
+    highRisk();
+});
 
 //  padanie gulicky 
 function dropBall(ball) {
@@ -299,12 +393,17 @@ function dropBall(ball) {
 const toggleLayoutBtn = document.getElementById("toggleLayout");
 toggleLayoutBtn.addEventListener("click", () => {
     layoutMode = layoutMode === "grid" ? "triangle" : "grid";
+     switch (currentRisk) {
+        case 'low': lowRisk(); break;
+        case 'medium': mediumRisk(); break;
+        case 'high': highRisk(); break;
+    }  
 });
 
 drop.addEventListener("click", () => {
     const betValue = parseFloat(betInput.value);
-    if (isNaN(betValue) || betValue <= 0 ||  BalanceManager.getBalance()  < betValue) return;
-    
+    if (isNaN(betValue) || betValue <= 0 || BalanceManager.getBalance() < betValue) return;
+
     // Uloženie hodnoty stávky pred spustením guľôčky
     currentBet = betValue;
     BalanceManager.subtract(currentBet);
@@ -325,72 +424,184 @@ function reflectAgainstLine(ball, x1, y1, x2, y2) {
     ball.dx -= 2 * dot * nx;
     ball.dy -= 2 * dot * ny;
 
-    // Dampening after bouncing off funnel walls
+
     const dampingFactor = 0.5; // adjust this (0.5 = 50% speed retained)
     ball.dx *= dampingFactor;
     ball.dy *= dampingFactor;
 }
 // kolízie pre gulicky
+
 function checkCollisions() {
     let leftWallLine = null;
     let rightWallLine = null;
 
     if (layoutMode === "triangle") {
-        leftWallLine = { x1: 10, y1: 90, x2: 410, y2: 130 };
-        rightWallLine = { x1: 465, y1: 130, x2: 960, y2: 80 };
+        leftWallLine = { x1: 370, y1: 160, x2: 190, y2: 525 };
+        rightWallLine = { x1: 520, y1: 130, x2: 690, y2: 525 };
     }
 
     for (let i = 0; i < balls.length; i++) {
         const ball = balls[i];
+
         if (checkMultiplierCollision(ball, i)) {
             i--;
             continue;
         }
-        
-        const trampolineY = (rows * spacingY) + yOffset + 20;
-if (ball.y + ball.radius >= trampolineY && ball.dy > 0) {
-    ball.y = trampolineY - ball.radius;
-    ball.dy *= -1; // reverse and dampen vertical speed
-    ball.dx *= 0.95; // slightly reduce horizontal drift
-}
 
-        // vymazanie guli ak prejdu canvas
+        const trampolineY = (rows * spacingY) + yOffset + 20;
+        if (ball.y + ball.radius >= trampolineY && ball.dy > 0) {
+            ball.y = trampolineY - ball.radius;
+            ball.dy *= -1;
+            ball.dx *= 0.95;
+        }
+
         if (ball.y > canvas.height + ball.radius) {
             balls.splice(i, 1);
             i--;
             continue;
         }
-        //kolizie medzi stenami
+
         if (layoutMode === "triangle") {
-            if (leftWallLine && ball.y >= leftWallLine.y1 && ball.y <= leftWallLine.y2 && ball.x < (leftWallLine.x2 - 5)) {
-                reflectAgainstLine(ball, leftWallLine.x1, leftWallLine.y1, leftWallLine.x2, leftWallLine.y2);
-                ball.x += 2;
-            }
-            if (rightWallLine && ball.y >= rightWallLine.y2 && ball.y <= rightWallLine.y1 && ball.x > (rightWallLine.x1 + 5)) {
-                reflectAgainstLine(ball, rightWallLine.x1, rightWallLine.y1, rightWallLine.x2, rightWallLine.y2);
-                ball.x -= 2;
-            }
+            handleTriangleWallCollisions(ball, leftWallLine, rightWallLine);
         } else {
-            const wall1 = 40 + 75;
-            const wall2 = 745;
-            if (ball.x - ball.radius <= wall1) {
-                ball.x = wall1 + ball.radius;
-                ball.dx *= -1;
-            }
-            if (ball.x + ball.radius >= wall2) {
-                ball.x = wall2 - ball.radius;
-                ball.dx *= -1;
-            }
+            handleGridWallCollisions(ball);
         }
 
-        for (const peg of pegs) {
-            const dist = Math.sqrt(Math.pow(ball.x - peg.x, 2) + Math.pow(ball.y - peg.y, 2));
-            if (dist <= ball.radius + pegRadius) {
-                handleCollision(ball, peg.x, peg.y);
-            }
+        handlePegCollisions(ball);
+    }
+}
+
+function handleTriangleWallCollisions(ball, leftWall, rightWall) {
+    if (leftWall && !isBallBehindLeftWall(ball, leftWall)) {
+        const dx = leftWall.x2 - leftWall.x1;
+        const dy = leftWall.y2 - leftWall.y1;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const nx = dy / length;
+        const ny = -dx / length;
+
+        const dist = (ball.x - leftWall.x1) * nx +
+            (ball.y - leftWall.y1) * ny;
+
+        if (dist < ball.radius) {
+            reflectAgainstLine(ball, leftWall.x1, leftWall.y1,
+                leftWall.x2, leftWall.y2);
+
+            const overlap = ball.radius - dist;
+            ball.x += nx * (overlap + 1);
+            ball.y += ny * (overlap + 1);
+
+            const randomAngle = Math.random() * Math.PI / 4 - Math.PI / 8;
+            const randomForce = 0.5;
+            ball.dx += Math.cos(randomAngle) * randomForce;
+            ball.dy += Math.sin(randomAngle) * randomForce;
+        }
+    }
+
+    if (rightWall && !isBallBehindRightWall(ball, rightWall)) {
+        const dx = rightWall.x2 - rightWall.x1;
+        const dy = rightWall.y2 - rightWall.y1;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const nx = dy / length;
+        const ny = -dx / length;
+
+        const dist = (ball.x - rightWall.x1) * nx +
+            (ball.y - rightWall.y1) * ny;
+
+        if (dist > -ball.radius) {
+            reflectAgainstLine(ball, rightWall.x1, rightWall.y1,
+                rightWall.x2, rightWall.y2);
+
+            const overlap = ball.radius + dist;
+            ball.x += nx * (overlap + 1);
+            ball.y += ny * (overlap + 1);
+
+            const randomAngle = Math.random() * Math.PI / 4 - Math.PI / 8;
+            const randomForce = 0.5;
+            ball.dx += Math.cos(randomAngle) * randomForce;
+            ball.dy += Math.sin(randomAngle) * randomForce;
         }
     }
 }
+
+function handleGridWallCollisions(ball) {
+    const wall1 = 40 + 75;
+    const wall2 = 745;
+
+    if (ball.x - ball.radius <= wall1) {
+        ball.x = wall1 + ball.radius;
+        ball.dx *= -0.8;
+
+        const randomOffset = (Math.random() - 0.5) * 2;
+        ball.y += randomOffset;
+
+        ball.dx += 1;
+    }
+
+    if (ball.x + ball.radius >= wall2) {
+        ball.x = wall2 - ball.radius;
+        ball.dx *= -0.8;
+
+        const randomOffset = (Math.random() - 0.5) * 2;
+        ball.y += randomOffset;
+
+        ball.dx -= 1;
+    }
+}
+
+function handlePegCollisions(ball) {
+    for (const peg of pegs) {
+        const dx = ball.x - peg.x;
+        const dy = ball.y - peg.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance <= ball.radius + pegRadius) {
+            const nx = dx / distance;
+            const ny = dy / distance;
+
+            const dotProduct = ball.dx * nx + ball.dy * ny;
+            ball.dx -= 2 * dotProduct * nx;
+            ball.dy -= 2 * dotProduct * ny;
+
+            ball.dx *= 0.35;
+            ball.dy *= 0.35;
+
+            const overlap = ball.radius + pegRadius - distance;
+            ball.x += nx * (overlap + 1);
+            ball.y += ny * (overlap + 1);
+
+            const randomAngle = Math.random() * Math.PI * 2;
+            const randomForce = 0.3;
+            ball.dx += Math.cos(randomAngle) * randomForce;
+            ball.dy += Math.sin(randomAngle) * randomForce;
+
+            const centerX = canvas.width / 2;
+            const biasStrength = 0.75;
+            const bias = (centerX - ball.x) * biasStrength / canvas.width;
+            ball.dx += bias;
+        }
+    }
+}
+
+function isBallBehindLeftWall(ball, leftWall) {
+    const dx = leftWall.x2 - leftWall.x1;
+    const dy = leftWall.y2 - leftWall.y1;
+    const normalX = -dy;
+    const normalY = dx;
+
+    return (ball.x - leftWall.x1) * normalX +
+        (ball.y - leftWall.y1) * normalY > 0;
+}
+
+function isBallBehindRightWall(ball, rightWall) {
+    const dx = rightWall.x2 - rightWall.x1;
+    const dy = rightWall.y2 - rightWall.y1;
+    const normalX = -dy;
+    const normalY = dx;
+
+    return (ball.x - rightWall.x1) * normalX +
+        (ball.y - rightWall.y1) * normalY < 0;
+}
+
 
 
 
@@ -423,7 +634,7 @@ function animate() {
     drawPegs();
     drawWall1();
     drawWall2();
-    
+
     drawBottomLine();
     for (const ball of balls) {
         dropBall(ball);
@@ -437,7 +648,7 @@ function animate() {
 function setBet(amount) {
     if (activeBalls > 0) {
         alert('Nemôžete zmeniť stávku počas pohybu guľôčky!');
-        betInput.value = currentBet; 
+        betInput.value = currentBet;
         return;
     }
 

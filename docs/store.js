@@ -117,6 +117,31 @@ function updateStoreBalanceDisplay() {
         display.textContent = `Balance: ${formatted}`;
     }
 }
+document.addEventListener('keydown', function(event) {
+   
+    if (event.ctrlKey && event.code === 'KeyO') {
+        event.preventDefault(); 
+
+      
+        BalanceManager.add(1000000);
+
+     
+        updateBalanceDisplay(BalanceManager.getBalance());
+
+        console.log("Added 1M to balance via Ctrl + O");
+    }
+});
+document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && event.code === 'KeyL') {
+        event.preventDefault();
+
+        BalanceManager.setBalance(0);
+
+        updateBalanceDisplay(BalanceManager.getBalance());
+
+        console.log("Balance reset to 0 via Ctrl + L");
+    }
+});
 
 window.addEventListener("keydown", function (e) {
     if (e.ctrlKey && e.key.toLowerCase() === "i") {

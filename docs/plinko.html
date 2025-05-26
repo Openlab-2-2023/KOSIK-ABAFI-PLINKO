@@ -9,6 +9,21 @@
 </head>
 
 <body>
+    <div id="winMessage" style="
+    position: absolute;
+    top: 5%;
+    left: 60%;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 15px 25px;
+    border-radius: 12px;
+    font-size: 24px;
+    display: none;
+    z-index: 10;
+"></div>
     <div class="menu-buttons">
     <button id="home" onclick="window.location.href='index.html'">home</button>
     <button id="work" onclick="window.location.href='work.html'">work</button>
@@ -16,6 +31,9 @@
     </div>
     <div id="layout">
         <div id="menu">
+            <div id="logodiv">
+            <img id="logoimg" src="img/plinkologo.png" style="width:80%;" alt="">
+            </div>
             <h1 id="balance"
                 style="color: rgb(255, 255, 255); font-family: Arial, Helvetica, sans-serif; font-size: 20px;">Balance:
                 0</h1>
@@ -35,7 +53,7 @@
                 <button id="toggleLayout" onclick="mediumRisk()">Toggle Layout</button>
 
             </div>
-            <h1>Risk level</h1>
+            <h1 style="color: rgb(255, 255, 255); font-family: Arial, Helvetica, sans-serif; font-size: 25px;">Risk level</h1>
             <div id="risk-buttons">
                 <button id="low" onclick="lowRisk()">Low</button>
                 <button id="medium" onclick="mediumRisk()">Medium</button>
@@ -48,6 +66,7 @@
     </div>
     <script src="balanceManager.js"></script>
     <script src="script.js"></script>
+    <script src="store.js"></script>
 
 
 </body>

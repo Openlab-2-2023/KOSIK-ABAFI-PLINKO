@@ -1,8 +1,7 @@
-rozne gulicky za balance x
+rozne gulicky za balance </
 sposob zarabania </
-upgrade za balance x
-za balance mapy x
-rozne difficulty x
+upgrade za balance </
+rozne difficulty </
 
 mapa, gulicka, fyzika ovplyvnena sancou </
 

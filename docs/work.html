@@ -1,19 +1,27 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Klikacka s Plinko</title>
     <link rel="stylesheet" href="klikacka.css">
 </head>
+
 <body>
-   <div class="clicker-section">
+    <div class="clicker-section">
+    
         <button id="clicker">₿</button>
         <div id="balance">Balance: 0</div>
-        <div class="balance-info">
-            +25 za kliknutie!
+        <div class="menu-buttons">
+            <button id="home" onclick="window.location.href='index.html'">home</button>
+            <button id="hustle" onclick="window.location.href='hustle.html'">hustle</button>
+            <button id="shop" onclick="window.location.href='store.html'">store</button>
         </div>
-</div>
-<script src="balanceManager.js"></script>
-<script src="klikacka.js"></script>
+    </div>
+
+    <script src="balanceManager.js"></script>
+    <script src="klikacka.js"></script>
+    <script src="store.js"></script>
 
 </body>
+
 </html>

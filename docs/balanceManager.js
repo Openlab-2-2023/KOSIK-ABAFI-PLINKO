@@ -10,13 +10,16 @@ const BalanceManager = (function() {
     function getBalance() {
         return balance;
     }
+    
 
     function setBalance(newBalance) {
         balance = newBalance;
-        if (balance < 0) balance = 0; //prevencia zaporneho balancu
+        if (balance < 0.01) balance = 0; //prevencia zaporneho balancu
+        
         saveBalance();
         notifySubscribers();
     }
+    
     // pripocitavanie
     function add(amount) {
         balance += amount;

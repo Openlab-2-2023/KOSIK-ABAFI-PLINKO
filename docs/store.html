@@ -1,11 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Store</title>
+  <link rel="stylesheet" href="storestyle.css" />
 </head>
+
 <body>
-    <h1 style="font-size:90px;">COMING SOON NIGGAS</h1>
+  <div class="menu-buttons">
+    <button id="home" onclick="window.location.href='index.html'">home</button>
+    <button id="work" onclick="window.location.href='work.html'">work</button>
+    <button id="shop" onclick="window.location.href='store.html'">store</button>
+    </div>
+  <div class="store-section">
+    <h2 style="font-family: Arial, Helvetica, sans-serif; color:#46a76b; font-size: 50px; margin-left:33%; ;">Store</h2>
+    <div id="store-balance" style="font-weight: bold; color:white; font-size:20px; font-family: Arial, Helvetica, sans-serif; margin-left:30%; margin-bottom: 5%;">
+      Balance: 0
+    </div>
+    <button onclick="Store.buyClickUpgrade()">Upgrade Click (<span id="next-upgrade-cost"></span>)</button>
+    <button id="ball-multiplier-upgrade-btn" onclick="Store.buyBallMultiplierUpgrade()">
+    Upgrade Ball Multiplier (x1.0) – 1250 coins
+</button>
+
+    <script src="balanceManager.js"></script>
+    <script src="klikacka.js"></script>
+    <script src="store.js"></script>
 </body>
+
 </html>

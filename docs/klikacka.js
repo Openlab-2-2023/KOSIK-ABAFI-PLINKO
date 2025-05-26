@@ -10,19 +10,34 @@ const clicker = {
     intervalId: null,
     lastClickTime: 0,
     cooldownDuration: 100,
+    clickValue: parseFloat(localStorage.getItem("clickValue")) || 25,
+    currentMultiplier: 1.0,
 
     init() {
         this.startButtonVisibilityCycle();
         document.getElementById('clicker').addEventListener('click', () => this.handleClick());
 
-        // blokuje vstup všetkych klavies
         window.addEventListener('keydown', (event) => {
             event.preventDefault();
         });
 
-       
         BalanceManager.subscribe(this.updateDisplay.bind(this));
         this.updateDisplay(BalanceManager.getBalance());
+    },
+
+    handleClick() {
+        const currentTime = Date.now();
+        if (currentTime - this.lastClickTime >= this.cooldownDuration && this.isVisible) {
+            const totalGain = this.clickValue * this.currentMultiplier;
+            BalanceManager.add(totalGain);
+            this.lastClickTime = currentTime;
+
+            this.hideButton();
+            setTimeout(() => {
+                this.showButton();
+                this.moveButton();
+            }, 100);
+        }
     },
 
     getRandomPosition() {
@@ -66,27 +81,13 @@ const clicker = {
         document.getElementById('clicker').classList.add('hidden');
     },
 
-    handleClick() {
-        const currentTime = Date.now();
-
-        if (currentTime - this.lastClickTime >= this.cooldownDuration && this.isVisible) {
-            BalanceManager.add(25);  // pridavanie do celkove balance
-            this.lastClickTime = currentTime;
-
-            this.hideButton();
-            setTimeout(() => {
-                this.showButton();
-                this.moveButton();
-            }, 100);
-        }
-    },
 
     updateDisplay(currentBalance) {
-       const formatted = formatNumber(currentBalance);
-    document.getElementById('balance').textContent = `Balance: ${formatted}`;
+        const formatted = formatNumber(currentBalance);
+        document.getElementById('balance').textContent = `Balance: ${formatted} | Click: ${this.clickValue}x`;
     }
 };
 
-
+window.clicker = clicker
 
 window.onload = () => clicker.init();
